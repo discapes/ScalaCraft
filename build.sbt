@@ -9,6 +9,8 @@ lazy val root = (project in file("."))
 
 libraryDependencies += "io.github.spair" % "imgui-java-lwjgl3" % "1.86.11"
 libraryDependencies += "io.github.spair" % "imgui-java-natives-linux-ft" % "1.86.11"
+libraryDependencies += "commons-beanutils" % "commons-beanutils" % "1.9.4"
+libraryDependencies += "org.apache.commons" % "commons-configuration2" % "2.9.0"
 
 // https://mvnrepository.com/artifact/org.lwjgl/lwjgl/3.3.3
 libraryDependencies += "org.lwjgl" % "lwjgl" % "3.3.3"

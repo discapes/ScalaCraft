@@ -1,13 +1,14 @@
-import org.lwjgl._
-import org.lwjgl.glfw._
-import org.lwjgl.opengl._
-import org.lwjgl.system._
-import org.lwjgl.glfw.GLFW._
-import org.lwjgl.opengl.GL11._
-import org.lwjgl.system.MemoryUtil._
+import org.lwjgl.*
+import org.lwjgl.glfw.*
+import org.lwjgl.opengl.*
+import org.lwjgl.system.*
+import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.opengl.GL11.*
+import org.lwjgl.system.MemoryUtil.*
 import imgui.gl3.ImGuiImplGl3
 import imgui.glfw.ImGuiImplGlfw
 import imgui.ImGui
+import imgui.flag.ImGuiConfigFlags
 
 case class Window():
 
@@ -21,12 +22,13 @@ case class Window():
   private val imGuiRenderer = ImGuiImplGl3()
   private val imGuiPlatform = ImGuiImplGlfw()
   ImGui.createContext()
+  val io = ImGui.getIO
+  io.setIniFilename(null)
   imGuiPlatform.init(win, true)
   imGuiRenderer.init()
 
   def draw() =
     glColor3f(0.0, 1.0, 1.0)
-
     glBegin(GL_QUADS)
     glVertex2f(-0.5, 0.5)
     glVertex2f(0.5, 0.5)
