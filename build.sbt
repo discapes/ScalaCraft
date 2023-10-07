@@ -4,8 +4,12 @@ ThisBuild / scalaVersion := "3.3.1"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "ScalaTest"
-  )
+    name := "ScalaTest",
+    // https://github.com/scalafx/scalafx-ensemble/issues/6
+    run / fork := true,
+//    run / javaOptions += "-jvm-debug 9999"
+)
+
 
 libraryDependencies += "io.github.spair" % "imgui-java-lwjgl3" % "1.86.11"
 libraryDependencies += "io.github.spair" % "imgui-java-natives-linux-ft" % "1.86.11"
