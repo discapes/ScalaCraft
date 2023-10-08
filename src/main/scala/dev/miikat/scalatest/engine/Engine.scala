@@ -68,12 +68,14 @@ class Engine(game: Game) extends AutoCloseable:
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE)
-    val win = glfwCreateWindow(300, 300, "Hi", NULL, NULL)
+    val win = glfwCreateWindow(800, 800, "Hi", NULL, NULL)
     glfwMakeContextCurrent(win)
     glfwShowWindow(win)
 
     GL.createCapabilities()
     GLUtil.setupDebugMessageCallback(System.err)
+    glEnable(GL_DEPTH_TEST)
+
 
     println(s"GL Version: ${glGetString(GL_VERSION)}")
     glClearColor(1.0, 0.0, 0.0, 0.0)
@@ -121,7 +123,7 @@ class Engine(game: Game) extends AutoCloseable:
     programId
 
   private def drawEntity(ent: Entity) =
-    setShaderMatrix(camera.projMatrix.mul(camera.viewMatrix).mul(ent.modelMatrix))
+    setShaderMatrix(Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
     ent.texture.bind()
     ent.mesh.draw()
 

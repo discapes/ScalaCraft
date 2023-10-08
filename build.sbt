@@ -1,12 +1,15 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
-
 ThisBuild / scalaVersion := "3.3.1"
 
 lazy val root = (project in file("."))
   .settings(
     name := "ScalaTest",
     // https://github.com/scalafx/scalafx-ensemble/issues/6
-    run / fork := true
+    run / fork := true,
+    assembly / assemblyMergeStrategy := {
+      case PathList("META-INF", _*) => MergeStrategy.discard
+      case _                        => MergeStrategy.first
+    }
   )
 
 libraryDependencies += "io.github.spair" % "imgui-java-lwjgl3" % "1.86.11"

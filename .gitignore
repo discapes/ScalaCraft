@@ -1,8 +1,8 @@
 .bsp
 .idea
 target
-project
 .scala-build
 .bloop
 .metals
 *.log
+metals.sbt

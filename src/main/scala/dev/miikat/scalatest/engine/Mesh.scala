@@ -45,7 +45,7 @@ class Mesh(data: Array[Float], indices: Array[Int]):
   glVertexArrayAttribFormat(VAO, uvAttrIndex, 2, GL_FLOAT, false, /*offset*/ 3 * SIZEOF_FLOAT);
   glVertexArrayAttribBinding(VAO, posAttrIndex, mainBufferIndex)
   glVertexArrayAttribBinding(VAO, uvAttrIndex, mainBufferIndex)
-  glVertexArrayVertexBuffer(VAO, mainBufferIndex, VBO, /*offset*/ 0, /*stride*/ 3 * SIZEOF_FLOAT);
+  glVertexArrayVertexBuffer(VAO, mainBufferIndex, VBO, /*offset*/ 0, /*stride*/ 3 * SIZEOF_FLOAT + 2 * SIZEOF_FLOAT);
   glVertexArrayElementBuffer(VAO, VBO)
 
   def draw() =
