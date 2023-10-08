@@ -6,8 +6,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "ScalaTest",
     // https://github.com/scalafx/scalafx-ensemble/issues/6
-    run / fork := true,
-    run / javaOptions += "-agentlib:jdwp=transport=dt_socket,server=y,address=5005"
+    run / fork := true
   )
 
 libraryDependencies += "io.github.spair" % "imgui-java-lwjgl3" % "1.86.11"

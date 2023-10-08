@@ -23,6 +23,8 @@ import org.lwjgl.system.MemoryStack
 import scala.util.Using
 import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer
+import java.io.IOError
+import java.io.IOException
 
 class Texture(name: String):
   val id = glCreateTextures(GL_TEXTURE_2D)
@@ -40,12 +42,16 @@ class Texture(name: String):
 
   private def resourceToByteBuffer(name: String) =
     val bytes = getClass.getResourceAsStream(name).readAllBytes()
-    ByteBuffer.wrap(bytes)
+    // https://stackoverflow.com/questions/69478753/failed-to-load-image-using-stbi-load-lwjgl-used
+    //  ByteBuffer.wrap(bytes) won't work
+    MemoryUtil.memAlloc(bytes.length).put(bytes).position(0)
 
   private def loadImage(name: String) =
     Using.resource(MemoryStack.stackPush()): stack =>
       val w = stack.mallocInt(1);
       val h = stack.mallocInt(1);
       val channels = stack.mallocInt(1);
+      // val buf = stbi_load("src/main/resources/cube.png", w, h, channels, 4)
       val buf = stbi_load_from_memory(resourceToByteBuffer(name), w, h, channels, 4)
+      if buf == null then throw IOException(stbi_failure_reason())
       (w.get(), h.get(), buf)

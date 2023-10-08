@@ -16,7 +16,7 @@ class ScalaCraft extends Game:
 
   def init() =
     val cubeMesh = Mesh(Cube.data, Cube.indices)
-    val cubeTex = Texture("cube.png")
+    val cubeTex = Texture("/cube.png")
     cubeEnt = Entity(cubeTex, cubeMesh)
 
   override def update(glfwWindow: Long, delta: Double): Vector[Entity] =

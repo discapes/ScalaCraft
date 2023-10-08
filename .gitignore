@@ -5,3 +5,4 @@ project
 .scala-build
 .bloop
 .metals
+*.log
