@@ -7,7 +7,22 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11C.*
+import org.lwjgl.opengl.GL12C.*
+import org.lwjgl.opengl.GL13C.*
+import org.lwjgl.opengl.GL14C.*
+import org.lwjgl.opengl.GL15C.*
 import org.lwjgl.opengl.GL20C.*
+import org.lwjgl.opengl.GL21C.*
+import org.lwjgl.opengl.GL30C.*
+import org.lwjgl.opengl.GL31C.*
+import org.lwjgl.opengl.GL32C.*
+import org.lwjgl.opengl.GL33C.*
+import org.lwjgl.opengl.GL40C.*
+import org.lwjgl.opengl.GL41C.*
+import org.lwjgl.opengl.GL42C.*
+import org.lwjgl.opengl.GL43C.*
+import org.lwjgl.opengl.GL44C.*
+import org.lwjgl.opengl.GL45C.*
 import org.lwjgl.system.MemoryUtil.NULL
 
 import java.time.{Duration, Instant}
@@ -16,6 +31,7 @@ import scala.util.Using
 import org.lwjgl.system.MemoryStack
 
 import org.joml.*
+import org.lwjgl.opengl.GLUtil
 
 class Engine(game: Game) extends AutoCloseable:
   private val win = initWindow()
@@ -33,8 +49,9 @@ class Engine(game: Game) extends AutoCloseable:
       glfwPollEvents()
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      val objects = game.update(win, delta)
-      println("cycle")
+      val objects = game.update(win, camera, delta)
+
+      glUseProgram(shaderProgramId)
       objects.foreach(drawEntity)
 
       this.drawGui()
@@ -50,11 +67,14 @@ class Engine(game: Game) extends AutoCloseable:
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE)
     val win = glfwCreateWindow(300, 300, "Hi", NULL, NULL)
     glfwMakeContextCurrent(win)
     glfwShowWindow(win)
 
     GL.createCapabilities()
+    GLUtil.setupDebugMessageCallback(System.err)
+
     println(s"GL Version: ${glGetString(GL_VERSION)}")
     glClearColor(1.0, 0.0, 0.0, 0.0)
     win
