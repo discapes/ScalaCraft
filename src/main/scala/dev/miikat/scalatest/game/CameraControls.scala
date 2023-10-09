@@ -13,19 +13,14 @@ import math.Numeric.Implicits.infixNumericOps
 class CameraControls:
   var prevCursorPos: Vector2f = null
 
-  def processInput(win: Long, camera: Camera, delta: Double): Unit =
-    processMouse(win, camera)
+  def processInput(win: Long, camera: Camera, delta: Double, mouseDelta: Vector2f): Unit =
+    processMouse(camera, mouseDelta)
     processKeyboard(win, camera, delta)
 
-  def processMouse(win: Long, camera: Camera) =
-    val cursorPos = getCursorPos(win)
-    if prevCursorPos == null then prevCursorPos = cursorPos
-    val move = Vector2f(cursorPos).sub(prevCursorPos)
-    prevCursorPos = cursorPos
-    
-    camera.yaw += move.x
+  def processMouse(camera: Camera, mouseDelta: Vector2f) =
     // glfw screen space has top left as origin, so we subtract y instead of adding
-    camera.pitch = Math.clamp(-89.9f, 89.9f, camera.pitch - move.y)
+    camera.yaw += mouseDelta.x
+    camera.pitch = Math.clamp(-89.9f, 89.9f, camera.pitch - mouseDelta.y)
      
   def processKeyboard(win: Long, camera: Camera, delta: Double) =
     val mult = 4f
@@ -54,8 +49,3 @@ class CameraControls:
     if (moveDir.length > 0)
       camera.pos.add(moveDir.normalize().mul(mult * delta.toFloat))
 
-  def getCursorPos(win: Long) =
-    Using.resource(MemoryStack.stackPush()): stack =>
-      val (x, y) = (stack.mallocDouble(1), stack.mallocDouble(1))
-      glfwGetCursorPos(win, x, y)
-      Vector2f(x.get.toFloat, y.get.toFloat)

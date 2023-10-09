@@ -32,32 +32,44 @@ import org.lwjgl.system.MemoryStack
 
 import org.joml.*
 import org.lwjgl.opengl.GLUtil
+import imgui.flag.ImGuiConfigFlags
 
 class Engine(game: Game) extends AutoCloseable:
-  private val (win, winDim) = initWindow()
-  private val (imGuiPlatform, imGuiRenderer) = initImGui()
+  private val windowResult: (Long, (Int, Int)) = initWindow()
+  private val window = windowResult._1
+  private val winDim = windowResult._2
+  private val (imGuiIo, imGuiPlatform, imGuiRenderer) = initImGui(window)
   private val shaderProgramId = initShaders()
   private val camera = Camera(winDim)
+  private var paused = false
   game.init()
 
   def run(): Unit =
     var lastInstant = Instant.now()
+    glfwPollEvents()
+    var lastCursorPos = getCursorPos(window)
 
-    while !glfwWindowShouldClose(win) do
-      val now = Instant.now()
-      val delta = Duration.between(lastInstant, now).toMillis / 1000.0
+    while !glfwWindowShouldClose(window) do
       glfwPollEvents()
+      val now = Instant.now()
+      val cursorPos = getCursorPos(window)
+      val delta = Duration.between(lastInstant, now).toMillis / 1000.0
+      val cursorDelta = Vector2f(cursorPos).sub(lastCursorPos)
+
+      if !paused then
+        game.updateState(window, camera, delta, cursorDelta)
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      val objects = game.update(win, camera, delta)
+      val objects = game.meshes
 
       glUseProgram(shaderProgramId)
       objects.foreach(drawEntity)
 
       this.drawGui()
 
-      glfwSwapBuffers(win)
+      glfwSwapBuffers(window)
       lastInstant = now
+      lastCursorPos = cursorPos
 
   private def initWindow() =
     println("Hello LWJGL " + org.lwjgl.Version.getVersion + "!")
@@ -74,8 +86,17 @@ class Engine(game: Game) extends AutoCloseable:
     val win = glfwCreateWindow(vidMode.width, vidMode.height, "Hi", monitor, NULL)
     glfwMakeContextCurrent(win)
     glfwSetKeyCallback(win, (_, key, _, action, _) => 
-      if key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE then
-        glfwSetWindowShouldClose(win, true)
+      if action == GLFW_PRESS then
+        key match
+          case GLFW_KEY_ESCAPE =>  glfwSetWindowShouldClose(win, true)
+          case GLFW_KEY_P =>
+            paused = !paused
+            if paused then
+              imGuiIo.removeConfigFlags(ImGuiConfigFlags.NoMouse)
+            else 
+              imGuiIo.addConfigFlags(ImGuiConfigFlags.NoMouse)
+            glfwSetInputMode(win, GLFW_CURSOR, if paused then GLFW_CURSOR_NORMAL else GLFW_CURSOR_DISABLED)
+          case _ => ()
     )
     glfwSetInputMode(win, GLFW_STICKY_KEYS, GL_TRUE)
     glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
@@ -90,15 +111,16 @@ class Engine(game: Game) extends AutoCloseable:
     glClearColor(0.0, 0.0, 0.0, 0.0)
     (win, (vidMode.width, vidMode.height))
 
-  private def initImGui() =
+  private def initImGui(win: Long) =
     val imGuiRenderer = ImGuiImplGl3()
     val imGuiPlatform = ImGuiImplGlfw()
     ImGui.createContext()
     val io = ImGui.getIO
+    io.addConfigFlags(ImGuiConfigFlags.NoMouse)
     io.setIniFilename(null)
     imGuiPlatform.init(win, true)
     imGuiRenderer.init()
-    (imGuiPlatform, imGuiRenderer)
+    (io, imGuiPlatform, imGuiRenderer)
 
   private def drawGui(): Unit =
     imGuiPlatform.newFrame()
@@ -145,3 +167,9 @@ class Engine(game: Game) extends AutoCloseable:
     Using.resource(MemoryStack.stackPush()): stack =>
       val uniLoc = glGetUniformLocation(shaderProgramId, "MVP")
       glUniformMatrix4fv(uniLoc, false, mat.get(stack.mallocFloat(16)))
+
+  private def getCursorPos(win: Long) =
+    Using.resource(MemoryStack.stackPush()): stack =>
+      val (x, y) = (stack.mallocDouble(1), stack.mallocDouble(1))
+      glfwGetCursorPos(win, x, y)
+      Vector2f(x.get.toFloat, y.get.toFloat)

@@ -6,6 +6,7 @@ import org.lwjgl.glfw.GLFW.*
 
 import scala.util.Using
 import dev.miikat.scalatest.engine.*
+import org.joml.*
 
 val configs = Configurations()
 // remember the slash
@@ -20,10 +21,11 @@ class ScalaCraft extends Game:
     val cubeTex = Texture("/cube.png")
     cubeEnt = Entity(cubeTex, cubeMesh)
 
-  override def update(glfwWindow: Long, camera: Camera, delta: Double): Vector[Entity] =
-    cameraControls.processInput(glfwWindow, camera, delta)
-  //  println(camera.pos)
-    Vector(cubeEnt)
+  override def updateState(glfwWindow: Long, camera: Camera, delta: Double, mouseDelta: Vector2f) = 
+    cameraControls.processInput(glfwWindow, camera, delta, mouseDelta)
+    
+
+  override def meshes: Vector[Entity] = Vector(cubeEnt)
 
 @main
 def main() =

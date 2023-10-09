@@ -1,5 +1,8 @@
 package dev.miikat.scalatest.engine
 
+import org.joml.*
+
 trait Game:
-  def update(glfwWindow: Long, camera: Camera, delta: Double): Vector[Entity]
+  def updateState(glfwWindow: Long, camera: Camera, delta: Double, mouseDelta: Vector2f): Unit
+  def meshes: Vector[Entity]
   def init(): Unit
