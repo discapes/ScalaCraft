@@ -28,14 +28,14 @@ Section "ScalaCraft"
   SectionIn RO
 
   SetOutPath "$INSTDIR\."
-  File "ScalaCraft-assembly-0.1.0-SNAPSHOT.jar"
+  File "ScalaCraft-windows.jar"
   File /r "jre"
 SectionEnd
 
 Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\ScalaCraft"
   CreateShortCut "$SMPROGRAMS\ScalaCraft\Uninstall ScalaCraft.lnk" "$INSTDIR\Uninstall ScalaCraft.exe" "" "$INSTDIR\Uninstall ScalaCraft.exe" 0
-  CreateShortCut "$SMPROGRAMS\ScalaCraft\ScalaCraft.lnk" "$INSTDIR\jre\bin\java.exe" '-jar "$INSTDIR/ScalaCraft-assembly-0.1.0-SNAPSHOT.jar"' "$INSTDIR\Uninstall ScalaCraft.exe" 0
+  CreateShortCut "$SMPROGRAMS\ScalaCraft\ScalaCraft.lnk" "$INSTDIR\jre\bin\java.exe" '-jar "$INSTDIR/ScalaCraft-windows.jar"' "$INSTDIR\Uninstall ScalaCraft.exe" 0
 SectionEnd
 
 Section "Desktop Icons"
@@ -47,7 +47,7 @@ Section "Uninstall"
 
   RMDir /r "$INSTDIR\.\jre"
 
-  Delete /rebootok "$INSTDIR\.\ScalaCraft-assembly-0.1.0-SNAPSHOT.jar"
+  Delete /rebootok "$INSTDIR\.\ScalaCraft-windows.jar"
   RMDir "$INSTDIR\."
   RMDir "$INSTDIR"
 SectionEnd

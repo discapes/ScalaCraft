@@ -1,16 +1,18 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.1"
 val os = sys.env.get("SC_TARGET").getOrElse("linux")
+val projectName = "ScalaCraft"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "ScalaCraft",
+    name := projectName,
     // https://github.com/scalafx/scalafx-ensemble/issues/6
     run / fork := true,
     assembly / assemblyMergeStrategy := {
       case PathList("META-INF", _*) => MergeStrategy.discard
       case _                        => MergeStrategy.first
-    }
+    },
+    assembly / assemblyJarName := s"$projectName-$os.jar",
   )
 
 libraryDependencies += "io.github.spair" % "imgui-java-lwjgl3" % "1.86.11"

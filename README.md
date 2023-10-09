@@ -13,9 +13,9 @@
 
 ```bash
 IDIR="$(mktemp -d)"
-cp target/scala-3.3.1/ScalaCraft-assembly-0.1.0-SNAPSHOT.jar "$IDIR"
+cp target/scala-3.3.1/ScalaCraft-linux.jar "$IDIR"
 # --type rpm can be replaced with --type deb
-jpackage --name ScalaCraft --main-jar ScalaCraft-assembly-0.1.0-SNAPSHOT.jar --main-class dev.miikat.scalacraft.game.main --type rpm --input "$IDIR"
+jpackage --name ScalaCraft --main-jar ScalaCraft-linux.jar --main-class dev.miikat.scalacraft.game.main --type rpm --input "$IDIR" --linux-shortcut
 rm "$IDIR" -rf
 # the produced RPM installs the app to /opt/scalacraft
 ```
