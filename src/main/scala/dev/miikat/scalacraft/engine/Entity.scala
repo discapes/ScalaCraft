@@ -1,4 +1,4 @@
-package dev.miikat.scalatest.engine
+package dev.miikat.scalacraft.engine
 
 import org.joml.*;
 

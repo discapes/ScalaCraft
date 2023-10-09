@@ -1,4 +1,4 @@
-package dev.miikat.scalatest.engine
+package dev.miikat.scalacraft.engine
 import org.lwjgl.opengl.GL11C.*
 import org.lwjgl.opengl.GL12C.*
 import org.lwjgl.opengl.GL13C.*

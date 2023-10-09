@@ -1,4 +1,4 @@
-package dev.miikat.scalatest.engine
+package dev.miikat.scalacraft.engine
 
 import imgui.ImGui
 import imgui.gl3.ImGuiImplGl3

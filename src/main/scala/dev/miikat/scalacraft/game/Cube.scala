@@ -1,4 +1,4 @@
-package dev.miikat.scalatest.game
+package dev.miikat.scalacraft.game
 
 object Cube:
   val positions = Array(

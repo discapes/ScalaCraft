@@ -3,7 +3,7 @@ ThisBuild / scalaVersion := "3.3.1"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "ScalaTest",
+    name := "ScalaCraft",
     // https://github.com/scalafx/scalafx-ensemble/issues/6
     run / fork := true,
     assembly / assemblyMergeStrategy := {

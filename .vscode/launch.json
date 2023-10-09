@@ -8,7 +8,7 @@
         "type": "scala",
         "request": "launch",
         "name": "Untitled",
-        "mainClass": "dev.miikat.scalatest.game.main",
+        "mainClass": "dev.miikat.scalacraft.game.main",
         "args": [],
         "jvmOptions": [],
         "env": {}

@@ -1,11 +1,11 @@
-package dev.miikat.scalatest.game
+package dev.miikat.scalacraft.game
 
 import org.lwjgl.opengl.GL11C.*
 import org.apache.commons.configuration2.builder.fluent.Configurations
 import org.lwjgl.glfw.GLFW.*
 
 import scala.util.Using
-import dev.miikat.scalatest.engine.*
+import dev.miikat.scalacraft.engine.*
 import org.joml.*
 
 val configs = Configurations()

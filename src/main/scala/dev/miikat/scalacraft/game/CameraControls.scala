@@ -1,6 +1,6 @@
-package dev.miikat.scalatest.game
+package dev.miikat.scalacraft.game
 
-import dev.miikat.scalatest.engine.Camera
+import dev.miikat.scalacraft.engine.Camera
 import org.lwjgl.glfw.GLFW.*
 import scala.util.Using
 import org.lwjgl.system.MemoryStack
