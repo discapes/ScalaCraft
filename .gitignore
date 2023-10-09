@@ -6,3 +6,4 @@ target
 .metals
 *.log
 metals.sbt
+*.rpm
