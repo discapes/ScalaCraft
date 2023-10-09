@@ -34,10 +34,10 @@ import org.joml.*
 import org.lwjgl.opengl.GLUtil
 
 class Engine(game: Game) extends AutoCloseable:
-  private val win = initWindow()
+  private val (win, winDim) = initWindow()
   private val (imGuiPlatform, imGuiRenderer) = initImGui()
   private val shaderProgramId = initShaders()
-  private val camera = Camera()
+  private val camera = Camera(winDim)
   game.init()
 
   def run(): Unit =
@@ -68,8 +68,15 @@ class Engine(game: Game) extends AutoCloseable:
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE)
-    val win = glfwCreateWindow(800, 800, "Hi", NULL, NULL)
+    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, 1)
+    val monitor = glfwGetPrimaryMonitor();
+    val vidMode = glfwGetVideoMode(monitor);
+    val win = glfwCreateWindow(vidMode.width, vidMode.height, "Hi", monitor, NULL)
     glfwMakeContextCurrent(win)
+    glfwSetKeyCallback(win, (_, key, _, action, _) => 
+      if key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE then
+        glfwSetWindowShouldClose(win, true)
+    )
     glfwShowWindow(win)
 
     GL.createCapabilities()
@@ -78,8 +85,8 @@ class Engine(game: Game) extends AutoCloseable:
 
 
     println(s"GL Version: ${glGetString(GL_VERSION)}")
-    glClearColor(1.0, 0.0, 0.0, 0.0)
-    win
+    glClearColor(0.0, 0.0, 0.0, 0.0)
+    (win, (vidMode.width, vidMode.height))
 
   private def initImGui() =
     val imGuiRenderer = ImGuiImplGl3()
