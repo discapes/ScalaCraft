@@ -25,7 +25,7 @@ class ScalaCraft extends Game:
     cameraControls.processInput(glfwWindow, camera, delta, mouseDelta)
     
 
-  override def meshes: Vector[Entity] = Vector(cubeEnt)
+  override def scene: Scene = Scene(Array(cubeEnt), Array())
 
 @main
 def main() =

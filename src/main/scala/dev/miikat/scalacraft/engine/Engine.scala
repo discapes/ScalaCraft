@@ -59,12 +59,7 @@ class Engine(game: Game) extends AutoCloseable:
       if !paused then
         game.updateState(window, camera, delta, cursorDelta)
 
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      val objects = game.meshes
-
-      glUseProgram(shaderProgramId)
-      objects.foreach(drawEntity)
-
+      this.drawScene(game.scene)
       this.drawGui()
 
       glfwSwapBuffers(window)
@@ -158,10 +153,20 @@ class Engine(game: Game) extends AutoCloseable:
 
     programId
 
-  private def drawEntity(ent: Entity) =
-    setShaderMatrix(Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
-    ent.texture.bind()
-    ent.mesh.draw()
+  private def bindLightsUniform(lights: Array[Light]): Unit =
+    // TODO construct UBO for lighting objects from scene.lights
+    // and bind it 
+    ???
+
+  private def drawScene(scene: Scene) =
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(shaderProgramId)
+    bindLightsUniform(scene.lights)
+
+    scene.entities.foreach: ent =>
+      setShaderMatrix(Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
+      ent.texture.bind()
+      ent.mesh.draw()
 
   private def setShaderMatrix(mat: Matrix4f) =
     Using.resource(MemoryStack.stackPush()): stack =>
