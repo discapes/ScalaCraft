@@ -77,6 +77,8 @@ class Engine(game: Game) extends AutoCloseable:
       if key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE then
         glfwSetWindowShouldClose(win, true)
     )
+    glfwSetInputMode(win, GLFW_STICKY_KEYS, GL_TRUE)
+    glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
     glfwShowWindow(win)
 
     GL.createCapabilities()
@@ -102,6 +104,11 @@ class Engine(game: Game) extends AutoCloseable:
     imGuiPlatform.newFrame()
     ImGui.newFrame()
     ImGui.begin("Cool Window")
+    ImGui.text(s"Pitch: ${camera.pitch}")
+    ImGui.text(s"Yaw: ${camera.yaw}")
+    ImGui.text(s"X: ${camera.pos.x}")
+    ImGui.text(s"Y: ${camera.pos.y}")
+    ImGui.text(s"Z: ${camera.pos.z}")
     ImGui.end()
     ImGui.render()
     imGuiRenderer.renderDrawData(ImGui.getDrawData)
