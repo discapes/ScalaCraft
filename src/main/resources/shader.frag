@@ -86,9 +86,12 @@ vec4 calcPointLightColor(PointLight light) {
   float specPower = pow(max(dot(normalize(camPos - frag.pos), reflection), 0), shine);
   vec4 specular = vec4(light.color, 1) * texture(tex_spec, frag.uv) * specPower;
 
-  // TODO attenuation
+  float dist = length(light.pos - frag.pos);
+  float constant = 1;
+  float attenuation = constant + light.linear * dist + light.quadratic * (dist * dist);
+  float luminosity = 1.0 / attenuation;
 
-  return diffuse + specular;
+  return (diffuse + specular) * luminosity;
 }
 
 vec4 calcSpotLightColor(SpotLight light) {
