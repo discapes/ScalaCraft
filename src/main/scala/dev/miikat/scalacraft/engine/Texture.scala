@@ -52,6 +52,7 @@ class Texture(name: String):
       val h = stack.mallocInt(1);
       val channels = stack.mallocInt(1);
       val pngBuf = resourceToByteBuffer(name)
+      stbi_set_flip_vertically_on_load(true)
       val buf = stbi_load_from_memory(pngBuf, w, h, channels, 4)
       MemoryUtil.memFree(pngBuf)
       if buf == null then throw IOException(stbi_failure_reason())

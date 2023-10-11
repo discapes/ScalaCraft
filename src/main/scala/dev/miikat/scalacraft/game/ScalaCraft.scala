@@ -17,8 +17,8 @@ class ScalaCraft extends Game:
   val cameraControls = CameraControls()
 
   def init() =
-    val cubeMesh = Mesh(Cube.data, Cube.indices)
-    val cubeTex = Texture("/cube.png")
+    val cubeMesh = Mesh(Cube.vertices, Cube.indices)
+    val cubeTex = Texture("/grass_diffuse.png")
     cubeEnt = Entity(cubeTex, cubeMesh)
 
   override def updateState(glfwWindow: Long, camera: Camera, delta: Double, mouseDelta: Vector2f) = 

@@ -67,7 +67,7 @@ vec4 calcSpotLightColor(SpotLight light) {
 void main()
 {
   color = texture(tex, f_uv) * vec4(ambientLight, 1);
-  
+  /*
   for (int i = 0; i < nPointLights; i++)
       color += calcPointLightColor(pointLights[i]);
   
@@ -76,5 +76,5 @@ void main()
     
   for (int i = 0; i < nSpotLights; i++)
       color += calcSpotLightColor(spotLights[i]);
-  
+  */
 }

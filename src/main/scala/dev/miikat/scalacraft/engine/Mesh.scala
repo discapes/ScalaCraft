@@ -26,7 +26,8 @@ val SIZEOF_INT = 4
 
 class Mesh(data: Array[Float], indices: Array[Int]):
   private val posAttrIndex = 0
-  private val uvAttrIndex = 1
+  private val normAttrIndex = 1
+  private val uvAttrIndex = 2
   private val mainBufferIndex = 0
   val VAO = glCreateVertexArrays()
   val VBO = glCreateBuffers()
@@ -40,12 +41,15 @@ class Mesh(data: Array[Float], indices: Array[Int]):
 
   // initialize the VAO
   glEnableVertexArrayAttrib(VAO, posAttrIndex)
+  glEnableVertexArrayAttrib(VAO, normAttrIndex)
   glEnableVertexArrayAttrib(VAO, uvAttrIndex)
   glVertexArrayAttribFormat(VAO, posAttrIndex, 3, GL_FLOAT, false, /*offset*/ 0);
-  glVertexArrayAttribFormat(VAO, uvAttrIndex, 2, GL_FLOAT, false, /*offset*/ 3 * SIZEOF_FLOAT);
+  glVertexArrayAttribFormat(VAO, normAttrIndex, 3, GL_FLOAT, false, /*offset*/ 3 * SIZEOF_FLOAT);
+  glVertexArrayAttribFormat(VAO, uvAttrIndex, 2, GL_FLOAT, false, /*offset*/ (3 + 3) * SIZEOF_FLOAT);
   glVertexArrayAttribBinding(VAO, posAttrIndex, mainBufferIndex)
+  glVertexArrayAttribBinding(VAO, normAttrIndex, mainBufferIndex)
   glVertexArrayAttribBinding(VAO, uvAttrIndex, mainBufferIndex)
-  glVertexArrayVertexBuffer(VAO, mainBufferIndex, VBO, /*offset*/ 0, /*stride*/ 3 * SIZEOF_FLOAT + 2 * SIZEOF_FLOAT);
+  glVertexArrayVertexBuffer(VAO, mainBufferIndex, VBO, /*offset*/ 0, /*stride*/ (3 + 2 + 3) * SIZEOF_FLOAT);
   glVertexArrayElementBuffer(VAO, VBO)
 
   def draw() =
