@@ -44,12 +44,9 @@ layout(binding=0) uniform sampler2D tex;
 layout(binding=1) uniform sampler2D tex_spec;
 
 layout (std140, binding=0) uniform Lighting {
-    vec3 ambientLight;
     uint nPointLights;
-    
     uint nDirLights;
     uint nSpotLights;
-    //-
     //-
     
     PointLight pointLights[10];
@@ -58,6 +55,7 @@ layout (std140, binding=0) uniform Lighting {
 };
 
 uniform vec3 camPos;
+uniform vec3 ambientLight;
 
 vec4 calcDirLightColor(DirLight light) {
   vec3 normal = normalize(frag.rawNormal);
@@ -82,7 +80,7 @@ vec4 calcPointLightColor(PointLight light) {
   vec4 diffuse = vec4(light.color, 1) * texture(tex, frag.uv) * diffPower;
 
   vec3 reflection = reflect(-lightDir, normal);
-  float shine = 32;
+  float shine = 100;
   float specPower = pow(max(dot(normalize(camPos - frag.pos), reflection), 0), shine);
   vec4 specular = vec4(light.color, 1) * texture(tex_spec, frag.uv) * specPower;
 

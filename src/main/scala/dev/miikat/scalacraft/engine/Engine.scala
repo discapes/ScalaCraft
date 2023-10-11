@@ -103,6 +103,7 @@ class Engine(game: Game) extends AutoCloseable:
     GL.createCapabilities()
     GLUtil.setupDebugMessageCallback(System.err)
     glEnable(GL_DEPTH_TEST)
+    glEnable(GL_CULL_FACE)
 
 
     println(s"GL Version: ${glGetString(GL_VERSION)}")
@@ -166,11 +167,9 @@ class Engine(game: Game) extends AutoCloseable:
       v.get(buf)
       buf.position(buf.position + 4 * 3)
     
-    insertVec3(scene.ambientLight)
     buf.putInt(pointLights.length)
     buf.putInt(dirLights.length)
     buf.putInt(spotLights.length)
-    buf.putFloat(0f)
     buf.putFloat(0f)
 
     pointLights.foreach: pl =>
@@ -223,6 +222,9 @@ class Engine(game: Game) extends AutoCloseable:
 
     scene.entities.foreach: ent =>
       setShaderMatrices(Matrix4f(camera.projMatrix), Matrix4f(camera.viewMatrix), Matrix4f(ent.modelMatrix))
+      if ent.ambientLight.isDefined then
+        setAmbientLight(ent.ambientLight.get)
+      else setAmbientLight(scene.ambientLight)
       ent.texture.bind(0)
       ent.spec.bind(1)
       ent.mesh.draw()
@@ -237,6 +239,10 @@ class Engine(game: Game) extends AutoCloseable:
       glUniformMatrix4fv(mvpLoc, false, MVP.get(stack.mallocFloat(16)))
       glUniformMatrix4fv(mLoc, false, model.get(stack.mallocFloat(16)))
       glUniform3f(camPosLoc, camera.pos.x, camera.pos.y, camera.pos.z)
+
+  private def setAmbientLight(col: Vector3f) =
+    val loc = glGetUniformLocation(shaderProgramId, "ambientLight")
+    glUniform3f(loc, col.x, col.y, col.z)
 
 
   private def getCursorPos(win: Long) =

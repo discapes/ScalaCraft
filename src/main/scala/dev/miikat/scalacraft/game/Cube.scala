@@ -1,5 +1,7 @@
 package dev.miikat.scalacraft.game
 
+import dev.miikat.scalacraft.engine.Mesh
+
 object Cube:
   // converted from CppCraft with sed 's/[{}]//g;s/\.f/.0/g;s/ //g'
   val vertices = Array(
@@ -23,3 +25,5 @@ object Cube:
     6*3+2,6*3+2,5*3+2,4*3+2,0*3+0,4*3+0,5*3+0,5*3+0,1*3+0,0*3+0,
     0*3+1,3*3+1,7*3+1,7*3+1,4*3+1,0*3+1
   )
+
+  val mesh = Mesh(vertices, indices)

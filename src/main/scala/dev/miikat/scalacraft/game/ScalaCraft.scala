@@ -18,21 +18,29 @@ class ScalaCraft extends Game:
   val cameraControls = CameraControls()
 
   def init() =
-    val cubeMesh = Mesh(Cube.vertices, Cube.indices)
     val cubeTex = Texture("/grass_diffuse.png")
     val cubeTexSpec = Texture("/grass_specular.png")
-    val cubeEnt = Entity(cubeTex, cubeTexSpec, cubeMesh)
+    val sphereTex = Texture("/earth2048.bmp")
+    val sphereTexSpec = Texture("/moon1024.bmp")
+    val cubeEnt = Entity(cubeTex, cubeTexSpec, Cube.mesh)
+    val sphere = Entity(sphereTex, sphereTexSpec, Sphere.create(32, 32, 1))
+    val l1sphere = Entity(sphereTexSpec, sphereTexSpec, Sphere.create(32, 32, 0.2), Some(Vector3f(0,0.4,1)))
+    l1sphere.pos = Vector3f(0, 3, 2)
+    val l2sphere = Entity(sphereTexSpec, sphereTexSpec, Sphere.create(32, 32, 0.2), Some(Vector3f(1,0.2,0.2)))
+    l2sphere.pos = Vector3f(7,5,5)
+
+    sphere.pos.set(3, 3, 3)
     cubeEnt.pos.set(5, 1, 5)
     val otherCubes = 
       for 
         i <- 0 to 9
         j <- 0 to 9
       yield
-        val ent = Entity(cubeTex, cubeTexSpec, cubeMesh)
+        val ent = Entity(cubeTex, cubeTexSpec, Cube.mesh)
         ent.pos.set(i, 0, j)
         ent
     entities = ArrayBuffer.from(otherCubes)
-    entities.append(cubeEnt)
+    entities.append(cubeEnt, sphere, l1sphere, l2sphere)
 
   override def updateState(glfwWindow: Long, camera: Camera, delta: Double, mouseDelta: Vector2f) = 
     cameraControls.processInput(glfwWindow, camera, delta, mouseDelta)
@@ -41,8 +49,8 @@ class ScalaCraft extends Game:
   override def scene: Scene =
     val light = Light.Point(Vector3f(0,0.4,1), Vector3f(0,3,2), 0.09f, 0.032f)
     val light3 = Light.Point(Vector3f(1,0.2,0.2), Vector3f(7,5,5), 0.09f, 0.032f)
-    val light2 = Light.Directional(Vector3f(1,0.7,0), Vector3f(4,3,2))
-    val lights = Array[Light](light2, light, light3)
+    //val light2 = Light.Directional(Vector3f(1,0.7,0), Vector3f(4,3,2))
+    val lights = Array[Light](light, light3)
     Scene(entities.toArray, lights)
 
 
