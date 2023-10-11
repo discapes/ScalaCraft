@@ -33,6 +33,9 @@ import org.lwjgl.system.MemoryStack
 import org.joml.*
 import org.lwjgl.opengl.GLUtil
 import imgui.flag.ImGuiConfigFlags
+import scala.collection.mutable.ArrayBuffer
+import java.nio.ByteBuffer
+import org.lwjgl.system.MemoryUtil
 
 class Engine(game: Game) extends AutoCloseable:
   private val windowResult: (Long, (Int, Int)) = initWindow()
@@ -153,15 +156,57 @@ class Engine(game: Game) extends AutoCloseable:
 
     programId
 
-  private def bindLightsUniform(lights: Array[Light]): Unit =
-    // TODO construct UBO for lighting objects from scene.lights
-    // and bind it 
-    ???
+  private def bindLightsUniform(scene: Scene): Unit =
+    val pointLights = scene.lights.filter(_ == Light.Point).map(_.asInstanceOf[Light.Point])
+    val dirLights = scene.lights.filter(_ == Light.Directional).map(_.asInstanceOf[Light.Directional])
+    val spotLights = scene.lights.filter(_ == Light.Spot).map(_.asInstanceOf[Light.Spot])
+    
+    val buf = MemoryUtil.memCalloc(1000)
+    def insertVec3(v: Vector3f) =
+      v.get(buf)
+      buf.position(buf.position + 4 * 3)
+    
+    insertVec3(scene.ambientLight)
+    buf.putFloat(pointLights.length)
+    buf.putFloat(dirLights.length)
+    buf.putFloat(spotLights.length)
+    buf.putFloat(0f)
+    buf.putFloat(0f)
+    pointLights.foreach: pl =>
+      insertVec3(pl.color)
+      buf.putFloat(pl.linear)
+      insertVec3(pl.pos)
+      buf.putFloat(pl.quadratic)
+    dirLights.foreach: dl =>
+      insertVec3(dl.color)
+      buf.putFloat(0f)
+      insertVec3(dl.dir)
+      buf.putFloat(0f)
+    spotLights.foreach: sl =>
+      insertVec3(sl.color)
+      buf.putFloat(0f)
+      insertVec3(sl.pos)
+      buf.putFloat(0f)
+      insertVec3(sl.dir)
+      buf.putFloat(sl.linear)
+      buf.putFloat(sl.quadratic)
+      buf.putFloat(sl.innerCutoff)
+      buf.putFloat(sl.outerCutoff)
+      buf.putFloat(0f)
+
+    val bytesWritten = buf.position
+    buf.position(0)
+
+    val UBO = glCreateBuffers()
+    glNamedBufferStorage(UBO, bytesWritten, GL_DYNAMIC_STORAGE_BIT)
+    // we use the native so we can use a bigger buf as src,
+    nglNamedBufferSubData(UBO, /*offset*/ 0, bytesWritten, MemoryUtil.memAddress(buf))
+    glBindBufferBase(GL_UNIFORM_BUFFER, /*index*/0, UBO)
 
   private def drawScene(scene: Scene) =
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shaderProgramId)
-    bindLightsUniform(scene.lights)
+    bindLightsUniform(scene)
 
     scene.entities.foreach: ent =>
       setShaderMatrix(Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
