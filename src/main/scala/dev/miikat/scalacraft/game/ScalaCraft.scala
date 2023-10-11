@@ -25,7 +25,12 @@ class ScalaCraft extends Game:
     cameraControls.processInput(glfwWindow, camera, delta, mouseDelta)
     
 
-  override def scene: Scene = Scene(Array(cubeEnt), Array())
+  override def scene: Scene =
+    val entities = Array(cubeEnt)
+    val light = Light.Point(Vector3f(1,1,1), Vector3f(4,4,4), 1f, 1f, 1f)
+    val lights = Array[Light](light)
+    Scene(entities, lights)
+
 
 @main
 def main() =

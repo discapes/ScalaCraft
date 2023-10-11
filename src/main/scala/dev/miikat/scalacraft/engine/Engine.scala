@@ -157,42 +157,55 @@ class Engine(game: Game) extends AutoCloseable:
     programId
 
   private def bindLightsUniform(scene: Scene): Unit =
-    val pointLights = scene.lights.filter(_ == Light.Point).map(_.asInstanceOf[Light.Point])
-    val dirLights = scene.lights.filter(_ == Light.Directional).map(_.asInstanceOf[Light.Directional])
-    val spotLights = scene.lights.filter(_ == Light.Spot).map(_.asInstanceOf[Light.Spot])
+    val pointLights = scene.lights.filter(_.isInstanceOf[Light.Point]).map(_.asInstanceOf[Light.Point])
+    val dirLights = scene.lights.filter(_.isInstanceOf[Light.Directional]).map(_.asInstanceOf[Light.Directional])
+    val spotLights = scene.lights.filter(_.isInstanceOf[Light.Spot]).map(_.asInstanceOf[Light.Spot])
     
-    val buf = MemoryUtil.memCalloc(1000)
+    val buf = MemoryUtil.memCalloc(4096)
     def insertVec3(v: Vector3f) =
       v.get(buf)
       buf.position(buf.position + 4 * 3)
     
     insertVec3(scene.ambientLight)
-    buf.putFloat(pointLights.length)
-    buf.putFloat(dirLights.length)
-    buf.putFloat(spotLights.length)
+    buf.putInt(pointLights.length)
+    buf.putInt(dirLights.length)
+    buf.putInt(spotLights.length)
     buf.putFloat(0f)
     buf.putFloat(0f)
+
     pointLights.foreach: pl =>
       insertVec3(pl.color)
       buf.putFloat(pl.linear)
       insertVec3(pl.pos)
       buf.putFloat(pl.quadratic)
+    val blankPointLights = 10 - pointLights.length
+    buf.position(buf.position + blankPointLights * Light.Point.alignedSize)
+    
+    
     dirLights.foreach: dl =>
       insertVec3(dl.color)
       buf.putFloat(0f)
       insertVec3(dl.dir)
       buf.putFloat(0f)
+    val blankDirLights = 10 - pointLights.length
+    buf.position(buf.position + blankDirLights * Light.Directional.alignedSize)
+
     spotLights.foreach: sl =>
       insertVec3(sl.color)
       buf.putFloat(0f)
+
       insertVec3(sl.pos)
       buf.putFloat(0f)
+      
       insertVec3(sl.dir)
       buf.putFloat(sl.linear)
+      
       buf.putFloat(sl.quadratic)
       buf.putFloat(sl.innerCutoff)
       buf.putFloat(sl.outerCutoff)
       buf.putFloat(0f)
+    val blankSpotLights = 10 - pointLights.length
+    buf.position(buf.position + blankSpotLights * Light.Spot.alignedSize)
 
     val bytesWritten = buf.position
     buf.position(0)
