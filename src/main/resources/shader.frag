@@ -41,6 +41,7 @@ struct SpotLight {
 };
 
 layout(binding=0) uniform sampler2D tex;
+layout(binding=1) uniform sampler2D tex_spec;
 
 layout (std140, binding=0) uniform Lighting {
     vec3 ambientLight;
@@ -56,6 +57,7 @@ layout (std140, binding=0) uniform Lighting {
     SpotLight spotLights[10];
 };
 
+uniform vec3 camPos;
 
 vec4 calcDirLightColor(DirLight light) {
   return vec4(0, 0, 0, 0);
@@ -64,9 +66,16 @@ vec4 calcDirLightColor(DirLight light) {
 vec4 calcPointLightColor(PointLight light) {
   vec3 normal = normalize(frag.rawNormal);
   vec3 lightDir = normalize(light.pos - frag.pos);
+
   float diffPower = max(dot(normal, lightDir), 0);
   vec4 diffuse = vec4(light.color, 1) * texture(tex, frag.uv) * diffPower;
-  return diffuse;
+
+  vec3 reflection = reflect(-lightDir, normal);
+  float shine = 32;
+  float specPower = pow(max(dot(normalize(camPos - frag.pos), reflection), 0), shine);
+  vec4 specular = vec4(light.color, 1) * texture(tex_spec, frag.uv) * specPower;
+
+  return diffuse + specular;
 }
 
 vec4 calcSpotLightColor(SpotLight light) {

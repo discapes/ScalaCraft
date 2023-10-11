@@ -223,7 +223,8 @@ class Engine(game: Game) extends AutoCloseable:
 
     scene.entities.foreach: ent =>
       setShaderMatrices(Matrix4f(camera.projMatrix), Matrix4f(camera.viewMatrix), Matrix4f(ent.modelMatrix))
-      ent.texture.bind()
+      ent.texture.bind(0)
+      ent.spec.bind(1)
       ent.mesh.draw()
 
   private def setShaderMatrices(proj: Matrix4f, view: Matrix4f, model: Matrix4f) =
@@ -232,8 +233,10 @@ class Engine(game: Game) extends AutoCloseable:
     Using.resource(MemoryStack.stackPush()): stack =>
       val mvpLoc = glGetUniformLocation(shaderProgramId, "MVP")
       val mLoc = glGetUniformLocation(shaderProgramId, "M")
+      val camPosLoc = glGetUniformLocation(shaderProgramId, "camPos")
       glUniformMatrix4fv(mvpLoc, false, MVP.get(stack.mallocFloat(16)))
       glUniformMatrix4fv(mLoc, false, model.get(stack.mallocFloat(16)))
+      glUniform3f(camPosLoc, camera.pos.x, camera.pos.y, camera.pos.z)
 
 
   private def getCursorPos(win: Long) =

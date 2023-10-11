@@ -38,7 +38,7 @@ class Texture(name: String):
   glTextureSubImage2D(id, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data)
   glGenerateTextureMipmap(id)
 
-  def bind() = glBindTextureUnit(0, id)
+  def bind(unit: Int) = glBindTextureUnit(unit, id)
 
   private def resourceToByteBuffer(name: String) =
     val bytes = getClass.getResourceAsStream(name).readAllBytes()
