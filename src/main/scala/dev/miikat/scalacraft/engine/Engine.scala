@@ -222,14 +222,19 @@ class Engine(game: Game) extends AutoCloseable:
     bindLightsUniform(scene)
 
     scene.entities.foreach: ent =>
-      setShaderMatrix(Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
+      setShaderMatrices(Matrix4f(camera.projMatrix), Matrix4f(camera.viewMatrix), Matrix4f(ent.modelMatrix))
       ent.texture.bind()
       ent.mesh.draw()
 
-  private def setShaderMatrix(mat: Matrix4f) =
+  private def setShaderMatrices(proj: Matrix4f, view: Matrix4f, model: Matrix4f) =
+    val MVP = proj.mul(view).mul(model)
+
     Using.resource(MemoryStack.stackPush()): stack =>
-      val uniLoc = glGetUniformLocation(shaderProgramId, "MVP")
-      glUniformMatrix4fv(uniLoc, false, mat.get(stack.mallocFloat(16)))
+      val mvpLoc = glGetUniformLocation(shaderProgramId, "MVP")
+      val mLoc = glGetUniformLocation(shaderProgramId, "M")
+      glUniformMatrix4fv(mvpLoc, false, MVP.get(stack.mallocFloat(16)))
+      glUniformMatrix4fv(mLoc, false, model.get(stack.mallocFloat(16)))
+
 
   private def getCursorPos(win: Long) =
     Using.resource(MemoryStack.stackPush()): stack =>

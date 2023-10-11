@@ -1,6 +1,11 @@
 #version 450 core
 
-in vec2 f_uv;
+in VStoFS {
+    vec3 pos;
+    vec3 rawNormal;
+    vec2 uv;
+} frag;
+
 out vec4 color;
 
 struct DirLight {
@@ -57,7 +62,11 @@ vec4 calcDirLightColor(DirLight light) {
 }
 
 vec4 calcPointLightColor(PointLight light) {
-  return vec4(0.1, 0, 0, 0);
+  vec3 normal = normalize(frag.rawNormal);
+  vec3 lightDir = normalize(light.pos - frag.pos);
+  float diffPower = max(dot(normal, lightDir), 0);
+  vec4 diffuse = vec4(light.color, 1) * texture(tex, frag.uv) * diffPower;
+  return diffuse;
 }
 
 vec4 calcSpotLightColor(SpotLight light) {
@@ -66,8 +75,8 @@ vec4 calcSpotLightColor(SpotLight light) {
 
 void main()
 {
-  color = texture(tex, f_uv) * vec4(ambientLight, 1);
-  /*
+  color = texture(tex, frag.uv) * vec4(ambientLight, 1);
+  
   for (int i = 0; i < nPointLights; i++)
       color += calcPointLightColor(pointLights[i]);
   
@@ -76,5 +85,5 @@ void main()
     
   for (int i = 0; i < nSpotLights; i++)
       color += calcSpotLightColor(spotLights[i]);
-  */
+  
 }
