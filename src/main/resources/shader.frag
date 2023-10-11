@@ -60,7 +60,18 @@ layout (std140, binding=0) uniform Lighting {
 uniform vec3 camPos;
 
 vec4 calcDirLightColor(DirLight light) {
-  return vec4(0, 0, 0, 0);
+  vec3 normal = normalize(frag.rawNormal);
+  vec3 lightDir = normalize(-light.dir);
+
+  float diffPower = max(dot(normal, lightDir), 0);
+  vec4 diffuse = vec4(light.color, 1) * texture(tex, frag.uv) * diffPower;
+
+  vec3 reflection = reflect(-lightDir, normal);
+  float shine = 32;
+  float specPower = pow(max(dot(normalize(camPos - frag.pos), reflection), 0), shine);
+  vec4 specular = vec4(light.color, 1) * texture(tex_spec, frag.uv) * specPower;
+
+  return diffuse + specular;
 }
 
 vec4 calcPointLightColor(PointLight light) {
@@ -74,6 +85,8 @@ vec4 calcPointLightColor(PointLight light) {
   float shine = 32;
   float specPower = pow(max(dot(normalize(camPos - frag.pos), reflection), 0), shine);
   vec4 specular = vec4(light.color, 1) * texture(tex_spec, frag.uv) * specPower;
+
+  // TODO attenuation
 
   return diffuse + specular;
 }

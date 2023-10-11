@@ -29,7 +29,8 @@ class ScalaCraft extends Game:
   override def scene: Scene =
     val entities = Array(cubeEnt)
     val light = Light.Point(Vector3f(0,0.7,1), Vector3f(4,3,2), 1f, 1f, 1f)
-    val lights = Array[Light](light)
+    val light2 = Light.Directional(Vector3f(0,0.7,1), Vector3f(4,3,2))
+    val lights = Array[Light](light2)
     Scene(entities, lights)
 
 
