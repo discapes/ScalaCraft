@@ -7,9 +7,9 @@ val worldUp = Vector3f(0.0f, 1.0f, 0.0f)
 class Camera(winDim: (Int, Int)):
   val FOV = Math.toRadians(60.0f);
   val projMatrix = Matrix4f().setPerspective(FOV, winDim._1.toFloat / winDim._2.toFloat, 0.01f, 1000.0f);
-  var pos = Vector3f(2f, 1.3f, 2.5f)
-  var pitch = -15f
-  var yaw = -125f
+  var pos = Vector3f()
+  var pitch = 0f
+  var yaw = 0f
 
   def forward =
     val forward = Vector3f()

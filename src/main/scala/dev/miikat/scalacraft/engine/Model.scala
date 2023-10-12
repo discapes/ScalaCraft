@@ -4,18 +4,50 @@ import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.assimp.*
 import scala.collection.mutable.ArrayBuffer
 import org.joml.Vector3f
+import org.lwjgl.system.MemoryUtil
+
 
 object Model:
+  val ioSys = AIFileIO.create()
+    .OpenProc((pFileIO, pFilename, openMode) => 
+      val filename = MemoryUtil.memUTF8(pFilename)
+      val data = Util.resourceToByteBuffer(filename)
+      AIFile.create()
+        .ReadProc((pFile, pBuffer, size, count) => 
+          val max = Math.min(data.remaining() / size, count)
+          MemoryUtil.memCopy(MemoryUtil.memAddress(data), pBuffer, max * size)
+          data.position(data.position() + (max * size).toInt)
+          max
+        )
+        .SeekProc((pFile, offset, origin) => 
+          if origin == Assimp.aiOrigin_CUR then
+            data.position(data.position() + offset.toInt)
+          else if origin == Assimp.aiOrigin_SET then
+            data.position(offset.toInt)
+          else if origin == Assimp.aiOrigin_END then
+            data.position(data.limit() + offset.toInt)
+          0
+        )
+        .FileSizeProc(pFile => data.limit())
+        .address()
+    )
+    .CloseProc((pFileIO, pFile) => {
+        val aiFile = AIFile.create(pFile);
+        aiFile.ReadProc().free();
+        aiFile.SeekProc().free();
+        aiFile.FileSizeProc().free();
+    });
+
   // assimp lwjgl bindings use the C flat interface
   def load(path: String) = 
-    val fileBuf = Util.resourceToByteBuffer(path)
-    val scene = aiImportFileFromMemory(
-      fileBuf,
-      aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | 
+    val scene = aiImportFileEx(
+      path,
+      aiProcess_Triangulate | aiProcess_GenSmoothNormals | 
       aiProcess_JoinIdenticalVertices | aiProcess_OptimizeGraph | 
       aiProcess_OptimizeMeshes | aiProcess_GenUVCoords,
-      ""
+      ioSys
     )
+    if scene == null then throw Exception(aiGetErrorString())
     val nMeshes = scene.mNumMeshes
     println(s"assimp: $nMeshes meshes")
     val aiMeshes = for i <- 0 until nMeshes yield AIMesh.create(scene.mMeshes.get)
@@ -44,5 +76,6 @@ object Model:
         val indices = aiFaces.get.mIndices
         indexBuf.append(indices.get, indices.get, indices.get)
       Mesh(dataBuf.toArray, indexBuf.toArray)
+    aiReleaseImport(scene)
 
     meshes

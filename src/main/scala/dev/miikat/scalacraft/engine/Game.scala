@@ -5,4 +5,4 @@ import org.joml.*
 trait Game:
   def updateState(glfwWindow: Long, camera: Camera, delta: Long, mouseDelta: Vector2f): Unit
   def scene: Scene
-  def init(): Unit
+  def init(engine: Engine): Unit

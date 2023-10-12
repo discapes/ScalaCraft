@@ -18,12 +18,18 @@ class ScalaCraft extends Game:
   var lights = ArrayBuffer[Light]()
   val cameraControls = CameraControls()
 
-  def init() =
+  def init(engine: Engine) =
+    engine.camera.yaw = -69f
+    engine.camera.pitch = -26f
+    engine.camera.pos.set(1.3, 4.7, 11.7)
+
     val grassDiffTex = Texture("/grass_diffuse.png")
     val grassSpecTex = Texture("/grass_specular.png")
     val earthDiffTex = Texture("/earth2048.bmp")
     val moonDiffTex = Texture("/moon1024.bmp")
     val suzanneDiffTex = Texture("/suzanne.png")
+    val ratDiffTex = Texture("/rat_diff.jpg")
+    val ratNormTex = Texture("/rat_norm.jpg")
     
     val sphereMesh = Sphere.create(32, 32, 1)
 
@@ -60,7 +66,12 @@ class ScalaCraft extends Game:
     suzanne.pos.set(1, 2, 5)
     // val sunlight = Light.Directional(Vector3f(1.0, 1.0, 0.9), Vector3f(-1,-0.5,-0.2))
 
-    entities.append(grassBlock, earth, redSource, blueSource, suzanne, brightSource)
+    val ratMesh = Model.load("/rat.gltf")(0)
+    val rat = Entity(ratDiffTex, ratNormTex, ratMesh)
+    rat.pos.set(3, 0.50, 6)
+    rat.scale = 10f
+
+    entities.append(grassBlock, earth, redSource, blueSource, suzanne, brightSource, rat)
     entities.addAll(groundBlocks)
     lights.append(redLight, blueLight, brightLight)
 

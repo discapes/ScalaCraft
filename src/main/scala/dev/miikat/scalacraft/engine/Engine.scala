@@ -44,10 +44,10 @@ class Engine(game: Game) extends AutoCloseable:
   private val winDim = windowResult._2
   private val (imGuiIo, imGuiPlatform, imGuiRenderer) = initImGui(window)
   private val shaderProgramId = initShaders()
-  private val camera = Camera(winDim)
+  var camera = Camera(winDim)
   private var paused = false
   private var fps = 0.0
-  game.init()
+  game.init(this)
 
   def run(): Unit =
     var lastInstant = Instant.now()

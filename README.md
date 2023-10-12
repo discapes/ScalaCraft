@@ -18,6 +18,7 @@
 - ImGui
 - Single-buffer IBO and VBO
 - Direct State Access
+- Everything inside the jar
 - Todo:
   - Skybox
   - Material loading (AssImp)
@@ -25,6 +26,7 @@
   - ImGui option to toggle fullscreen and working resize handler
   - ImGui option to toggle VSync
   - FpsCounter class
+  - Normal mapping
 
 
 ### Building a Jar
