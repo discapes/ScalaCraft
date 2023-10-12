@@ -43,7 +43,7 @@ class Engine(game: Game) extends AutoCloseable:
   private val window = windowResult._1
   private val winDim = windowResult._2
   private val (imGuiIo, imGuiPlatform, imGuiRenderer) = initImGui(window)
-  private val shaderProgramId = initShaders()
+  private val shader = Shader("shader.vert", "shader.frag")
   var camera = Camera(winDim)
   private var paused = false
   private var fps = 0.0
@@ -147,26 +147,6 @@ class Engine(game: Game) extends AutoCloseable:
   def close(): Unit =
     glfwTerminate()
 
-  private def initShaders() =
-    val programId = glCreateProgram()
-    val vertShaderId = glCreateShader(GL_VERTEX_SHADER)
-    val fragShaderId = glCreateShader(GL_FRAGMENT_SHADER)
-    glShaderSource(vertShaderId, Source.fromResource("shader.vert").mkString)
-    glShaderSource(fragShaderId, Source.fromResource("shader.frag").mkString)
-    glCompileShader(vertShaderId)
-    glCompileShader(fragShaderId)
-    glAttachShader(programId, vertShaderId)
-    glAttachShader(programId, fragShaderId)
-
-    glLinkProgram(programId)
-
-    glDetachShader(programId, vertShaderId)
-    glDetachShader(programId, fragShaderId)
-    glDeleteShader(vertShaderId)
-    glDeleteShader(fragShaderId)
-
-    programId
-
   private def bindLightsUniform(scene: Scene): Unit =
     val pointLights = scene.lights.filter(_.isInstanceOf[Light.Point]).map(_.asInstanceOf[Light.Point])
     val dirLights = scene.lights.filter(_.isInstanceOf[Light.Directional]).map(_.asInstanceOf[Light.Directional])
@@ -227,33 +207,18 @@ class Engine(game: Game) extends AutoCloseable:
 
   private def drawScene(scene: Scene) =
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(shaderProgramId)
+    shader.use()
     bindLightsUniform(scene)
 
     scene.entities.foreach: ent =>
-      setShaderMatrices(Matrix4f(camera.projMatrix), Matrix4f(camera.viewMatrix), Matrix4f(ent.modelMatrix))
-      if ent.ambientLight.isDefined then
-        setAmbientLight(ent.ambientLight.get)
-      else setAmbientLight(scene.ambientLight)
+      shader.setMatrix4f("MVP", Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
+      shader.setMatrix4f("M", ent.modelMatrix)
+      shader.setVector3f("camPos", camera.pos)
+      shader.setVector3f("ambientLight", ent.ambientLight.getOrElse(scene.ambientLight))
+     
       ent.texture.bind(0)
       ent.spec.bind(1)
       ent.mesh.draw()
-
-  private def setShaderMatrices(proj: Matrix4f, view: Matrix4f, model: Matrix4f) =
-    val MVP = proj.mul(view).mul(model)
-
-    Using.resource(MemoryStack.stackPush()): stack =>
-      val mvpLoc = glGetUniformLocation(shaderProgramId, "MVP")
-      val mLoc = glGetUniformLocation(shaderProgramId, "M")
-      val camPosLoc = glGetUniformLocation(shaderProgramId, "camPos")
-      glUniformMatrix4fv(mvpLoc, false, MVP.get(stack.mallocFloat(16)))
-      glUniformMatrix4fv(mLoc, false, model.get(stack.mallocFloat(16)))
-      glUniform3f(camPosLoc, camera.pos.x, camera.pos.y, camera.pos.z)
-
-  private def setAmbientLight(col: Vector3f) =
-    val loc = glGetUniformLocation(shaderProgramId, "ambientLight")
-    glUniform3f(loc, col.x, col.y, col.z)
-
 
   private def getCursorPos(win: Long) =
     Using.resource(MemoryStack.stackPush()): stack =>
