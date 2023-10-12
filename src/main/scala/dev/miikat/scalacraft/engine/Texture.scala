@@ -40,18 +40,12 @@ class Texture(name: String):
 
   def bind(unit: Int) = glBindTextureUnit(unit, id)
 
-  private def resourceToByteBuffer(name: String) =
-    val bytes = getClass.getResourceAsStream(name).readAllBytes()
-    // https://stackoverflow.com/questions/69478753/failed-to-load-image-using-stbi-load-lwjgl-used
-    //  ByteBuffer.wrap(bytes) won't work
-    MemoryUtil.memAlloc(bytes.length).put(bytes).position(0)
-
   private def loadImage(name: String) =
     Using.resource(MemoryStack.stackPush()): stack =>
       val w = stack.mallocInt(1);
       val h = stack.mallocInt(1);
       val channels = stack.mallocInt(1);
-      val pngBuf = resourceToByteBuffer(name)
+      val pngBuf = Util.resourceToByteBuffer(name)
       stbi_set_flip_vertically_on_load(true)
       val buf = stbi_load_from_memory(pngBuf, w, h, channels, 4)
       MemoryUtil.memFree(pngBuf)

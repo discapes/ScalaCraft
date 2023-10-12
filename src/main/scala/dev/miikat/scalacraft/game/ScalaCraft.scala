@@ -14,44 +14,62 @@ val configs = Configurations()
 val config = configs.properties(this.getClass.getResource("/config.properties"))
 
 class ScalaCraft extends Game:
-  var entities: ArrayBuffer[Entity] = null
+  var entities = ArrayBuffer[Entity]()
+  var lights = ArrayBuffer[Light]()
   val cameraControls = CameraControls()
 
   def init() =
-    val cubeTex = Texture("/grass_diffuse.png")
-    val cubeTexSpec = Texture("/grass_specular.png")
-    val sphereTex = Texture("/earth2048.bmp")
-    val sphereTexSpec = Texture("/moon1024.bmp")
-    val cubeEnt = Entity(cubeTex, cubeTexSpec, Cube.mesh)
-    val sphere = Entity(sphereTex, sphereTexSpec, Sphere.create(32, 32, 1))
-    val l1sphere = Entity(sphereTexSpec, sphereTexSpec, Sphere.create(32, 32, 0.2), Some(Vector3f(0,0.4,1)))
-    l1sphere.pos = Vector3f(0, 3, 2)
-    val l2sphere = Entity(sphereTexSpec, sphereTexSpec, Sphere.create(32, 32, 0.2), Some(Vector3f(1,0.2,0.2)))
-    l2sphere.pos = Vector3f(7,5,5)
+    val grassDiffTex = Texture("/grass_diffuse.png")
+    val grassSpecTex = Texture("/grass_specular.png")
+    val earthDiffTex = Texture("/earth2048.bmp")
+    val moonDiffTex = Texture("/moon1024.bmp")
+    val suzanneDiffTex = Texture("/suzanne.png")
+    
+    val sphereMesh = Sphere.create(32, 32, 1)
 
-    sphere.pos.set(3, 3, 3)
-    cubeEnt.pos.set(5, 1, 5)
-    val otherCubes = 
+    val grassBlock = Entity(grassDiffTex, grassSpecTex, Cube.mesh)
+    grassBlock.pos.set(5, 1, 5)
+
+    val earth = Entity(earthDiffTex, moonDiffTex, sphereMesh)
+    earth.pos.set(3, 3, 3)
+
+    val blueLight: Light.Point = Light.Point(Vector3f(0,0.4,1), Vector3f(0,3,2), 0.09f, 0.032f)
+    val redLight: Light.Point = Light.Point(Vector3f(1,0.2,0.2), Vector3f(7,5,5), 0.09f, 0.032f)
+    val brightLight: Light.Point = Light.Point(Vector3f(1,1,0.9), Vector3f(2,2,7), 0.045f, 0.0075f)
+    val blueSource = Entity(moonDiffTex, moonDiffTex, sphereMesh, Some(blueLight.color))
+    val redSource = Entity(moonDiffTex, moonDiffTex, sphereMesh, Some(redLight.color))
+    val brightSource = Entity(moonDiffTex, moonDiffTex, sphereMesh, Some(brightLight.color))
+    blueSource.pos.set(blueLight.pos)
+    redSource.pos.set(redLight.pos)
+    brightSource.pos.set(brightLight.pos)
+    blueSource.scale = 0.4f
+    redSource.scale = 0.4f
+    brightSource.scale = 0.3f
+
+    val groundBlocks = 
       for 
         i <- 0 to 9
         j <- 0 to 9
       yield
-        val ent = Entity(cubeTex, cubeTexSpec, Cube.mesh)
+        val ent = Entity(grassDiffTex, grassSpecTex, Cube.mesh)
         ent.pos.set(i, 0, j)
         ent
-    entities = ArrayBuffer.from(otherCubes)
-    entities.append(cubeEnt, sphere, l1sphere, l2sphere)
+      
+    val suzanneMesh = Model.load("/suzanne.obj")(0)
+    val suzanne = Entity(suzanneDiffTex, suzanneDiffTex, suzanneMesh, Some(Vector3f(0.2,0.1,0.2)))
+    suzanne.pos.set(1, 2, 5)
+    // val sunlight = Light.Directional(Vector3f(1.0, 1.0, 0.9), Vector3f(-1,-0.5,-0.2))
 
-  override def updateState(glfwWindow: Long, camera: Camera, delta: Double, mouseDelta: Vector2f) = 
+    entities.append(grassBlock, earth, redSource, blueSource, suzanne, brightSource)
+    entities.addAll(groundBlocks)
+    lights.append(redLight, blueLight, brightLight)
+
+  override def updateState(glfwWindow: Long, camera: Camera, delta: Long, mouseDelta: Vector2f) = 
     cameraControls.processInput(glfwWindow, camera, delta, mouseDelta)
     
 
   override def scene: Scene =
-    val light = Light.Point(Vector3f(0,0.4,1), Vector3f(0,3,2), 0.09f, 0.032f)
-    val light3 = Light.Point(Vector3f(1,0.2,0.2), Vector3f(7,5,5), 0.09f, 0.032f)
-    //val light2 = Light.Directional(Vector3f(1,0.7,0), Vector3f(4,3,2))
-    val lights = Array[Light](light, light3)
-    Scene(entities.toArray, lights)
+    Scene(entities.toArray, lights.toArray)
 
 
 @main

@@ -13,7 +13,7 @@ import math.Numeric.Implicits.infixNumericOps
 class CameraControls:
   var prevCursorPos: Vector2f = null
 
-  def processInput(win: Long, camera: Camera, delta: Double, mouseDelta: Vector2f): Unit =
+  def processInput(win: Long, camera: Camera, delta: Long, mouseDelta: Vector2f): Unit =
     processMouse(camera, mouseDelta)
     processKeyboard(win, camera, delta)
 
@@ -22,8 +22,7 @@ class CameraControls:
     camera.yaw += mouseDelta.x
     camera.pitch = Math.clamp(-89.9f, 89.9f, camera.pitch - mouseDelta.y)
      
-  def processKeyboard(win: Long, camera: Camera, delta: Double) =
-    val mult = 4f
+  def processKeyboard(win: Long, camera: Camera, delta: Long) =
     val forward = camera.forward
     val right = camera.right
     val forwardFlat = Vector3f(forward.x, 0, forward.z).normalize()
@@ -47,5 +46,5 @@ class CameraControls:
 
     // if the length is 0, normalize returns NaN
     if (moveDir.length > 0)
-      camera.pos.add(moveDir.normalize().mul(mult * delta.toFloat))
+      camera.pos.add(moveDir.normalize().mul((math.pow(10.0, -9.0) * delta * 4).toFloat))
 

@@ -36,6 +36,7 @@ import imgui.flag.ImGuiConfigFlags
 import scala.collection.mutable.ArrayBuffer
 import java.nio.ByteBuffer
 import org.lwjgl.system.MemoryUtil
+import scala.math.pow
 
 class Engine(game: Game) extends AutoCloseable:
   private val windowResult: (Long, (Int, Int)) = initWindow()
@@ -45,18 +46,24 @@ class Engine(game: Game) extends AutoCloseable:
   private val shaderProgramId = initShaders()
   private val camera = Camera(winDim)
   private var paused = false
+  private var fps = 0.0
   game.init()
 
   def run(): Unit =
     var lastInstant = Instant.now()
     glfwPollEvents()
     var lastCursorPos = getCursorPos(window)
+    var lastFpsUpdate = Instant.now()
 
     while !glfwWindowShouldClose(window) do
       glfwPollEvents()
       val now = Instant.now()
       val cursorPos = getCursorPos(window)
-      val delta = Duration.between(lastInstant, now).toMillis / 1000.0
+      val delta = Duration.between(lastInstant, now).toNanos
+      if Duration.between(lastFpsUpdate, now).toMillis >= 500 then
+        this.fps =  pow(10.0, 9.0) / delta
+        lastFpsUpdate = now
+
       val cursorDelta = Vector2f(cursorPos).sub(lastCursorPos)
 
       if !paused then
@@ -83,6 +90,7 @@ class Engine(game: Game) extends AutoCloseable:
     val vidMode = glfwGetVideoMode(monitor);
     val win = glfwCreateWindow(vidMode.width, vidMode.height, "Hi", monitor, NULL)
     glfwMakeContextCurrent(win)
+    // glfwSwapInterval(0)
     glfwSetKeyCallback(win, (_, key, _, action, _) => 
       if action == GLFW_PRESS then
         key match
@@ -107,7 +115,7 @@ class Engine(game: Game) extends AutoCloseable:
 
 
     println(s"GL Version: ${glGetString(GL_VERSION)}")
-    glClearColor(0.0, 0.0, 0.0, 0.0)
+    glClearColor(0.0, 0.0, 0.0, 1.0)
     (win, (vidMode.width, vidMode.height))
 
   private def initImGui(win: Long) =
@@ -125,11 +133,12 @@ class Engine(game: Game) extends AutoCloseable:
     imGuiPlatform.newFrame()
     ImGui.newFrame()
     ImGui.begin("Cool Window")
+    ImGui.text(f"FPS: $fps%.0f")
     ImGui.text(s"Pitch: ${camera.pitch}")
     ImGui.text(s"Yaw: ${camera.yaw}")
-    ImGui.text(s"X: ${camera.pos.x}")
-    ImGui.text(s"Y: ${camera.pos.y}")
-    ImGui.text(s"Z: ${camera.pos.z}")
+    ImGui.text(f"X: ${camera.pos.x}%.2f")
+    ImGui.text(f"Y: ${camera.pos.y}%.2f")
+    ImGui.text(f"Z: ${camera.pos.z}%.2f")
     ImGui.end()
     ImGui.render()
     imGuiRenderer.renderDrawData(ImGui.getDrawData)

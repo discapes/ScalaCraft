@@ -5,9 +5,9 @@ import scala.Option
 
 
 enum Light:
-  case Point(color: Vector3f, pos: Vector3f, linear: Float, quadratic: Float)
-  case Directional(color: Vector3f, dir: Vector3f)
-  case Spot(color: Vector3f, pos: Vector3f, dir: Vector3f,  linear: Float, quadratic: Float, innerCutoff: Float, outerCutoff: Float)
+  case Point(var color: Vector3f, var pos: Vector3f, var linear: Float, var quadratic: Float)
+  case Directional(var color: Vector3f, var dir: Vector3f)
+  case Spot(var color: Vector3f, var pos: Vector3f, var dir: Vector3f,  var linear: Float, var quadratic: Float, var innerCutoff: Float, var outerCutoff: Float)
 
 object Light:
   object Point:

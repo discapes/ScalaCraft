@@ -1,5 +1,32 @@
 # ScalaCraft
 
+### Features
+
+- Lighting
+  - Types:
+    - Diffuse
+    - Specular
+    - Ambient
+  - Sources:
+    - Point
+    - Spot
+    - Directional
+- Texture loading (stb_image)
+- Model loading (AssImp)
+- Sphere generation
+- Camera and flying
+- ImGui
+- Single-buffer IBO and VBO
+- Direct State Access
+- Todo:
+  - Skybox
+  - Material loading (AssImp)
+  - Meshes with multiple textures (texture arrays)
+  - ImGui option to toggle fullscreen and working resize handler
+  - ImGui option to toggle VSync
+  - FpsCounter class
+
+
 ### Building a Jar
 
 - Install SBT (Scala Build Tool)
