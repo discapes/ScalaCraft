@@ -86,6 +86,7 @@ class Engine(game: Game) extends AutoCloseable:
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE)
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, 1)
+    glfwWindowHint(GLFW_SAMPLES, 4);
     val monitor = glfwGetPrimaryMonitor();
     val vidMode = glfwGetVideoMode(monitor);
     val win = glfwCreateWindow(vidMode.width, vidMode.height, "Hi", monitor, NULL)
@@ -112,7 +113,7 @@ class Engine(game: Game) extends AutoCloseable:
     GLUtil.setupDebugMessageCallback(System.err)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_CULL_FACE)
-
+    glEnable(GL_MULTISAMPLE);  
 
     println(s"GL Version: ${glGetString(GL_VERSION)}")
     glClearColor(0.0, 0.0, 0.0, 1.0)
