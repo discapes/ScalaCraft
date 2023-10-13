@@ -1,5 +1,8 @@
 # ScalaCraft
 
+![Screenshot from 2023-10-13 11-22-23](https://github.com/discapes/ScalaCraft/assets/48839377/9bc97942-b0be-449e-8397-a6b80e65428a)
+
+
 ### Features
 
 - Lighting
@@ -28,7 +31,7 @@
   - FpsCounter class
   - Normal mapping
 
-### Building a Jar
+### Building a jarfile
 
 - Install SBT (Scala Build Tool)
 - Build a jar file with dependencies
