@@ -23,12 +23,13 @@
 - Direct State Access
 - Everything inside the jar
 - Skybox
+- FPS Counter
 - Todo:
+  - Text rendering
   - Material loading (AssImp)
   - Meshes with multiple textures (texture arrays)
   - ImGui option to toggle fullscreen and working resize handler
   - ImGui option to toggle VSync
-  - FpsCounter class
   - Normal mapping
 
 ### Building a jarfile

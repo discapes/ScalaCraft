@@ -46,8 +46,8 @@ class Engine(game: Game) extends AutoCloseable:
   private val shader = Shader("shader.vert", "shader.frag")
   var camera = Camera(winDim)
   val skybox = Skybox()
+  val fpsCounter = FpsCounter()
   private var paused = false
-  private var fps = 0.0
   game.init(this)
 
   def run(): Unit =
@@ -61,11 +61,8 @@ class Engine(game: Game) extends AutoCloseable:
       val now = Instant.now()
       val cursorPos = getCursorPos(window)
       val delta = Duration.between(lastInstant, now).toNanos
-      if Duration.between(lastFpsUpdate, now).toMillis >= 500 then
-        this.fps =  pow(10.0, 9.0) / delta
-        lastFpsUpdate = now
-
       val cursorDelta = Vector2f(cursorPos).sub(lastCursorPos)
+      fpsCounter.count()
 
       if !paused then
         game.updateState(window, camera, delta, cursorDelta)
@@ -135,7 +132,7 @@ class Engine(game: Game) extends AutoCloseable:
     imGuiPlatform.newFrame()
     ImGui.newFrame()
     ImGui.begin("Cool Window")
-    ImGui.text(f"FPS: $fps%.0f")
+    ImGui.text(f"FPS: ${fpsCounter.fps}%.0f")
     ImGui.text(s"Pitch: ${camera.pitch}")
     ImGui.text(s"Yaw: ${camera.yaw}")
     ImGui.text(f"X: ${camera.pos.x}%.2f")
