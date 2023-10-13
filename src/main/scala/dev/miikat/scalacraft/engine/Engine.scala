@@ -37,6 +37,7 @@ import scala.collection.mutable.ArrayBuffer
 import java.nio.ByteBuffer
 import org.lwjgl.system.MemoryUtil
 import scala.math.pow
+import imgui.`type`.ImBoolean
 
 class Engine(game: Game) extends AutoCloseable:
   private val windowResult: (Long, (Int, Int)) = initWindow()
@@ -87,9 +88,8 @@ class Engine(game: Game) extends AutoCloseable:
     glfwWindowHint(GLFW_SAMPLES, 4);
     val monitor = glfwGetPrimaryMonitor();
     val vidMode = glfwGetVideoMode(monitor);
-    val win = glfwCreateWindow(vidMode.width, vidMode.height, "Hi", monitor, NULL)
+    val win = glfwCreateWindow(vidMode.width, vidMode.height, "ScalaCraft", monitor, NULL)
     glfwMakeContextCurrent(win)
-    // glfwSwapInterval(0)
     glfwSetKeyCallback(win, (_, key, _, action, _) => 
       if action == GLFW_PRESS then
         key match
@@ -127,17 +127,21 @@ class Engine(game: Game) extends AutoCloseable:
     imGuiPlatform.init(win, true)
     imGuiRenderer.init()
     (io, imGuiPlatform, imGuiRenderer)
-
+  
+  val vSync = ImBoolean(true)
   private def drawGui(): Unit =
     imGuiPlatform.newFrame()
     ImGui.newFrame()
-    ImGui.begin("Cool Window")
+    ImGui.begin("Options and info")
     ImGui.text(f"FPS: ${fpsCounter.fps}%.0f")
     ImGui.text(s"Pitch: ${camera.pitch}")
     ImGui.text(s"Yaw: ${camera.yaw}")
     ImGui.text(f"X: ${camera.pos.x}%.2f")
     ImGui.text(f"Y: ${camera.pos.y}%.2f")
     ImGui.text(f"Z: ${camera.pos.z}%.2f")
+    if ImGui.checkbox("VSync", vSync) then
+      if vSync.get then glfwSwapInterval(1)
+      else glfwSwapInterval(0)
     ImGui.end()
     ImGui.render()
     imGuiRenderer.renderDrawData(ImGui.getDrawData)
