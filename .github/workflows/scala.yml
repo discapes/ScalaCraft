@@ -1,0 +1,37 @@
+name: Scala CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'sbt'
+    - name: Assemble Linux jar
+      run: sbt assembly
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: scalacraft-linux-jar
+        path: target/scala-3.3.1/ScalaCraft-linux.jar
+    - name: Assemble Windows jar
+      run: SC_TARGET=windows sbt assembly
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: scalacraft-windows-jar
+        path: target/scala-3.3.1/ScalaCraft-windows.jar
