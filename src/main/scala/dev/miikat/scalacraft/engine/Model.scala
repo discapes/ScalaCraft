@@ -11,7 +11,8 @@ object Model:
   val ioSys = AIFileIO.create()
     .OpenProc((pFileIO, pFilename, openMode) => 
       val filename = MemoryUtil.memUTF8(pFilename)
-      val data = Util.resourceToByteBuffer(filename)
+      // AssImp adds a slash already
+      val data = Util.resourceToByteBuffer(filename, insterSlash =  false)
       AIFile.create()
         .ReadProc((pFile, pBuffer, size, count) => 
           val max = Math.min(data.remaining() / size, count)

@@ -30,7 +30,7 @@ class Shader(vertFilename: String, fragFilename: String):
     val vertShaderId = glCreateShader(GL_VERTEX_SHADER)
     val fragShaderId = glCreateShader(GL_FRAGMENT_SHADER)
     glShaderSource(vertShaderId, Source.fromResource(vertFilename).mkString)
-    glShaderSource(fragShaderId, Source.fromResource(fragFilename ).mkString)
+    glShaderSource(fragShaderId, Source.fromResource(fragFilename).mkString)
     glCompileShader(vertShaderId)
     glCompileShader(fragShaderId)
     glAttachShader(programId, vertShaderId)

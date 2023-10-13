@@ -28,7 +28,7 @@ import java.io.IOException
 
 class Texture(name: String):
   val id = glCreateTextures(GL_TEXTURE_2D)
-  val (w, h, data) = loadImage(name)
+  val (w, h, data) = Util.loadImage(name, flip = true)
 
   glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -37,17 +37,6 @@ class Texture(name: String):
   glTextureStorage2D(id, 1, GL_RGBA8, w, h)
   glTextureSubImage2D(id, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data)
   glGenerateTextureMipmap(id)
+  stbi_image_free(data)
 
   def bind(unit: Int) = glBindTextureUnit(unit, id)
-
-  private def loadImage(name: String) =
-    Using.resource(MemoryStack.stackPush()): stack =>
-      val w = stack.mallocInt(1);
-      val h = stack.mallocInt(1);
-      val channels = stack.mallocInt(1);
-      val pngBuf = Util.resourceToByteBuffer(name)
-      stbi_set_flip_vertically_on_load(true)
-      val buf = stbi_load_from_memory(pngBuf, w, h, channels, 4)
-      MemoryUtil.memFree(pngBuf)
-      if buf == null then throw IOException(stbi_failure_reason())
-      (w.get(), h.get(), buf)

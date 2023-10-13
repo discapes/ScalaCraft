@@ -8,6 +8,7 @@ import scala.util.Using
 import dev.miikat.scalacraft.engine.*
 import org.joml.*
 import scala.collection.mutable.ArrayBuffer
+import dev.miikat.scalacraft.engine.Texture
 
 val configs = Configurations()
 // remember the slash
@@ -23,13 +24,13 @@ class ScalaCraft extends Game:
     engine.camera.pitch = -26f
     engine.camera.pos.set(1.3, 4.7, 11.7)
 
-    val grassDiffTex = Texture("/grass_diffuse.png")
-    val grassSpecTex = Texture("/grass_specular.png")
-    val earthDiffTex = Texture("/earth2048.bmp")
-    val moonDiffTex = Texture("/moon1024.bmp")
-    val suzanneDiffTex = Texture("/suzanne.png")
-    val ratDiffTex = Texture("/rat_diff.jpg")
-    val ratNormTex = Texture("/rat_norm.jpg")
+    val grassDiffTex = Texture("grass_diffuse.png")
+    val grassSpecTex = Texture("grass_specular.png")
+    val earthDiffTex = Texture("earth2048.bmp")
+    val moonDiffTex = Texture("moon1024.bmp")
+    val suzanneDiffTex = Texture("suzanne.png")
+    val ratDiffTex = Texture("rat_diff.jpg")
+    val ratNormTex = Texture("rat_norm.jpg")
     
     val sphereMesh = Sphere.create(32, 32, 1)
 
@@ -41,7 +42,7 @@ class ScalaCraft extends Game:
 
     val blueLight: Light.Point = Light.Point(Vector3f(0,0.4,1), Vector3f(0,3,2), 0.09f, 0.032f)
     val redLight: Light.Point = Light.Point(Vector3f(1,0.2,0.2), Vector3f(7,5,5), 0.09f, 0.032f)
-    val brightLight: Light.Point = Light.Point(Vector3f(1,1,0.9), Vector3f(2,2,7), 0.045f, 0.0075f)
+    val brightLight: Light.Point = Light.Point(Vector3f(1,1,0.9), Vector3f(-2,9,7), 0.045f, 0.0075f)
     val blueSource = Entity(moonDiffTex, moonDiffTex, sphereMesh, Some(blueLight.color))
     val redSource = Entity(moonDiffTex, moonDiffTex, sphereMesh, Some(redLight.color))
     val brightSource = Entity(moonDiffTex, moonDiffTex, sphereMesh, Some(brightLight.color))
@@ -61,26 +62,26 @@ class ScalaCraft extends Game:
         ent.pos.set(i, 0, j)
         ent
       
-    val suzanneMesh = Model.load("/suzanne.obj")(0)
+    val suzanneMesh = Model.load("suzanne.obj")(0)
     val suzanne = Entity(suzanneDiffTex, suzanneDiffTex, suzanneMesh, Some(Vector3f(0.2,0.1,0.2)))
     suzanne.pos.set(1, 2, 5)
-    // val sunlight = Light.Directional(Vector3f(1.0, 1.0, 0.9), Vector3f(-1,-0.5,-0.2))
+    val sunlight = Light.Directional(Vector3f(.8, .8, 1), Vector3f(2.2, -2.4, 4))
 
-    val ratMesh = Model.load("/rat.gltf")(0)
+    val ratMesh = Model.load("rat.gltf")(0)
     val rat = Entity(ratDiffTex, ratNormTex, ratMesh)
     rat.pos.set(3, 0.50, 6)
     rat.scale = 10f
 
     entities.append(grassBlock, earth, redSource, blueSource, suzanne, brightSource, rat)
     entities.addAll(groundBlocks)
-    lights.append(redLight, blueLight, brightLight)
+    lights.append(redLight, blueLight, brightLight, sunlight)
 
   override def updateState(glfwWindow: Long, camera: Camera, delta: Long, mouseDelta: Vector2f) = 
     cameraControls.processInput(glfwWindow, camera, delta, mouseDelta)
     
 
   override def scene: Scene =
-    Scene(entities.toArray, lights.toArray)
+    Scene(entities.toArray, lights.toArray, Vector3f(.3, .3, .5))
 
 
 @main

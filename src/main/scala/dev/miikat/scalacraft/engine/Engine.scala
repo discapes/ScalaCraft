@@ -45,6 +45,7 @@ class Engine(game: Game) extends AutoCloseable:
   private val (imGuiIo, imGuiPlatform, imGuiRenderer) = initImGui(window)
   private val shader = Shader("shader.vert", "shader.frag")
   var camera = Camera(winDim)
+  val skybox = Skybox()
   private var paused = false
   private var fps = 0.0
   game.init(this)
@@ -113,7 +114,7 @@ class Engine(game: Game) extends AutoCloseable:
     GLUtil.setupDebugMessageCallback(System.err)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_CULL_FACE)
-    glEnable(GL_MULTISAMPLE);  
+    glEnable(GL_MULTISAMPLE);
 
     println(s"GL Version: ${glGetString(GL_VERSION)}")
     glClearColor(0.0, 0.0, 0.0, 1.0)
@@ -147,68 +148,10 @@ class Engine(game: Game) extends AutoCloseable:
   def close(): Unit =
     glfwTerminate()
 
-  private def bindLightsUniform(scene: Scene): Unit =
-    val pointLights = scene.lights.filter(_.isInstanceOf[Light.Point]).map(_.asInstanceOf[Light.Point])
-    val dirLights = scene.lights.filter(_.isInstanceOf[Light.Directional]).map(_.asInstanceOf[Light.Directional])
-    val spotLights = scene.lights.filter(_.isInstanceOf[Light.Spot]).map(_.asInstanceOf[Light.Spot])
-    
-    val buf = MemoryUtil.memCalloc(4096)
-    def insertVec3(v: Vector3f) =
-      v.get(buf)
-      buf.position(buf.position + 4 * 3)
-    
-    buf.putInt(pointLights.length)
-    buf.putInt(dirLights.length)
-    buf.putInt(spotLights.length)
-    buf.putFloat(0f)
-
-    pointLights.foreach: pl =>
-      insertVec3(pl.color)
-      buf.putFloat(pl.linear)
-      insertVec3(pl.pos)
-      buf.putFloat(pl.quadratic)
-    val blankPointLights = 10 - pointLights.length
-    buf.position(buf.position + blankPointLights * Light.Point.alignedSize)
-    
-    
-    dirLights.foreach: dl =>
-      insertVec3(dl.color)
-      buf.putFloat(0f)
-      insertVec3(dl.dir)
-      buf.putFloat(0f)
-    val blankDirLights = 10 - pointLights.length
-    buf.position(buf.position + blankDirLights * Light.Directional.alignedSize)
-
-    spotLights.foreach: sl =>
-      insertVec3(sl.color)
-      buf.putFloat(0f)
-
-      insertVec3(sl.pos)
-      buf.putFloat(0f)
-      
-      insertVec3(sl.dir)
-      buf.putFloat(sl.linear)
-      
-      buf.putFloat(sl.quadratic)
-      buf.putFloat(sl.innerCutoff)
-      buf.putFloat(sl.outerCutoff)
-      buf.putFloat(0f)
-    val blankSpotLights = 10 - pointLights.length
-    buf.position(buf.position + blankSpotLights * Light.Spot.alignedSize)
-
-    val bytesWritten = buf.position
-    buf.position(0)
-
-    val UBO = glCreateBuffers()
-    glNamedBufferStorage(UBO, bytesWritten, GL_DYNAMIC_STORAGE_BIT)
-    // we use the native so we can use a bigger buf as src,
-    nglNamedBufferSubData(UBO, /*offset*/ 0, bytesWritten, MemoryUtil.memAddress(buf))
-    glBindBufferBase(GL_UNIFORM_BUFFER, /*index*/0, UBO)
-
   private def drawScene(scene: Scene) =
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     shader.use()
-    bindLightsUniform(scene)
+    scene.bindLightsUniform()
 
     scene.entities.foreach: ent =>
       shader.setMatrix4f("MVP", Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
@@ -219,7 +162,9 @@ class Engine(game: Game) extends AutoCloseable:
       ent.texture.bind(0)
       ent.spec.bind(1)
       ent.mesh.draw()
-
+    
+    skybox.draw(camera.viewMatrix, camera.projMatrix)
+    
   private def getCursorPos(win: Long) =
     Using.resource(MemoryStack.stackPush()): stack =>
       val (x, y) = (stack.mallocDouble(1), stack.mallocDouble(1))
