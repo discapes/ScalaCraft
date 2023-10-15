@@ -3,6 +3,7 @@ package dev.miikat.scalacraft.engine
 import org.joml.*
 
 trait Game:
-  def updateState(glfwWindow: Long, camera: Camera, delta: Long, mouseDelta: Vector2f): Unit
+  def updateState(delta: Long): Unit
+  def processInput(delta: Long, mouseDelta: Vector2f): Unit
   def scene: Scene
-  def init(engine: Engine): Unit
+  def drawGui(): Unit

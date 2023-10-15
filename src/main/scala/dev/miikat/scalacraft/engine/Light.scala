@@ -3,7 +3,6 @@ package dev.miikat.scalacraft.engine
 import org.joml.*
 import scala.Option
 
-
 enum Light:
   case Point(var color: Vector3f, var pos: Vector3f, var linear: Float, var quadratic: Float)
   case Directional(var color: Vector3f, var dir: Vector3f)

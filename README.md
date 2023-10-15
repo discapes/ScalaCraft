@@ -22,7 +22,7 @@
 - Single-buffer IBO and VBO
 - Direct State Access
 - Everything inside the jar
-- Skybox
+- Skybox  
 - FPS Counter
 - Todo:
   - Text rendering

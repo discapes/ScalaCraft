@@ -3,8 +3,6 @@ package dev.miikat.scalacraft.engine
 import imgui.ImGui
 import imgui.gl3.ImGuiImplGl3
 import imgui.glfw.ImGuiImplGlfw
-import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11C.*
 import org.lwjgl.opengl.GL12C.*
@@ -24,6 +22,7 @@ import org.lwjgl.opengl.GL43C.*
 import org.lwjgl.opengl.GL44C.*
 import org.lwjgl.opengl.GL45C.*
 import org.lwjgl.system.MemoryUtil.NULL
+import org.lwjgl.glfw.GLFW.*
 
 import java.time.{Duration, Instant}
 import scala.io.Source
@@ -39,135 +38,54 @@ import org.lwjgl.system.MemoryUtil
 import scala.math.pow
 import imgui.`type`.ImBoolean
 
-class Engine(game: Game) extends AutoCloseable:
-  private val windowResult: (Long, (Int, Int)) = initWindow()
-  private val window = windowResult._1
-  private val winDim = windowResult._2
-  private val (imGuiIo, imGuiPlatform, imGuiRenderer) = initImGui(window)
-  private val shader = Shader("shader.vert", "shader.frag")
-  var camera = Camera(winDim)
-  val skybox = Skybox()
-  val fpsCounter = FpsCounter()
-  private var paused = false
-  game.init(this)
+class Engine(gameFn: (window: Window) => Game, name: String) extends AutoCloseable:
+  val window = Window(name)
+  val gui = GUI(window.handle)
+  val renderer = Renderer(window)
+  val game = gameFn(window)
+  
+  var paused = false
+  val vSync = ImBoolean(true)
+  initCallbacks()
 
   def run(): Unit =
-    var lastInstant = Instant.now()
-    glfwPollEvents()
-    var lastCursorPos = getCursorPos(window)
-    var lastFpsUpdate = Instant.now()
+    window.show()
+    window.pollEvents()
 
-    while !glfwWindowShouldClose(window) do
-      glfwPollEvents()
+    var lastInstant = Instant.now()
+    var lastFpsUpdate = Instant.now()
+    var lastCursorPos = window.cursorPos
+
+    while !window.shouldClose do
+      window.pollEvents()
       val now = Instant.now()
-      val cursorPos = getCursorPos(window)
+      val cursorPos = window.cursorPos
       val delta = Duration.between(lastInstant, now).toNanos
       val cursorDelta = Vector2f(cursorPos).sub(lastCursorPos)
-      fpsCounter.count()
-
+      
       if !paused then
-        game.updateState(window, camera, delta, cursorDelta)
+        game.processInput(delta, cursorDelta)
+        game.updateState(delta)
 
-      this.drawScene(game.scene)
-      this.drawGui()
+      renderer.render(game.scene)
+      gui.beginFrame()
+      game.drawGui()
+      gui.endFrame()
+      window.swapBuffers()
 
-      glfwSwapBuffers(window)
       lastInstant = now
       lastCursorPos = cursorPos
 
-  private def initWindow() =
-    println("Hello LWJGL " + org.lwjgl.Version.getVersion + "!")
-    GLFWErrorCallback.createPrint(System.err).set()
-    glfwInit()
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5)
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE)
-    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, 1)
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    val monitor = glfwGetPrimaryMonitor();
-    val vidMode = glfwGetVideoMode(monitor);
-    val win = glfwCreateWindow(vidMode.width, vidMode.height, "ScalaCraft", monitor, NULL)
-    glfwMakeContextCurrent(win)
-    glfwSetKeyCallback(win, (_, key, _, action, _) => 
+  private def initCallbacks() =
+    glfwSetKeyCallback(window.handle, (_, key, _, action, _) => 
       if action == GLFW_PRESS then
         key match
-          case GLFW_KEY_ESCAPE =>  glfwSetWindowShouldClose(win, true)
+          case GLFW_KEY_ESCAPE =>  glfwSetWindowShouldClose(window.handle, true)
           case GLFW_KEY_P =>
             paused = !paused
-            if paused then
-              imGuiIo.removeConfigFlags(ImGuiConfigFlags.NoMouse)
-            else 
-              imGuiIo.addConfigFlags(ImGuiConfigFlags.NoMouse)
-            glfwSetInputMode(win, GLFW_CURSOR, if paused then GLFW_CURSOR_NORMAL else GLFW_CURSOR_DISABLED)
+            gui.setCaptureMouse(paused)
+            glfwSetInputMode(window.handle, GLFW_CURSOR, if paused then GLFW_CURSOR_NORMAL else GLFW_CURSOR_DISABLED)
           case _ => ()
     )
-    glfwSetInputMode(win, GLFW_STICKY_KEYS, GL_TRUE)
-    glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
-    glfwShowWindow(win)
 
-    GL.createCapabilities()
-    GLUtil.setupDebugMessageCallback(System.err)
-    glEnable(GL_DEPTH_TEST)
-    glEnable(GL_CULL_FACE)
-    glEnable(GL_MULTISAMPLE);
-
-    println(s"GL Version: ${glGetString(GL_VERSION)}")
-    glClearColor(0.0, 0.0, 0.0, 1.0)
-    (win, (vidMode.width, vidMode.height))
-
-  private def initImGui(win: Long) =
-    val imGuiRenderer = ImGuiImplGl3()
-    val imGuiPlatform = ImGuiImplGlfw()
-    ImGui.createContext()
-    val io = ImGui.getIO
-    io.addConfigFlags(ImGuiConfigFlags.NoMouse)
-    io.setIniFilename(null)
-    imGuiPlatform.init(win, true)
-    imGuiRenderer.init()
-    (io, imGuiPlatform, imGuiRenderer)
-  
-  val vSync = ImBoolean(true)
-  private def drawGui(): Unit =
-    imGuiPlatform.newFrame()
-    ImGui.newFrame()
-    ImGui.begin("Options and info")
-    ImGui.text(f"FPS: ${fpsCounter.fps}%.0f")
-    ImGui.text(s"Pitch: ${camera.pitch}")
-    ImGui.text(s"Yaw: ${camera.yaw}")
-    ImGui.text(f"X: ${camera.pos.x}%.2f")
-    ImGui.text(f"Y: ${camera.pos.y}%.2f")
-    ImGui.text(f"Z: ${camera.pos.z}%.2f")
-    if ImGui.checkbox("VSync", vSync) then
-      if vSync.get then glfwSwapInterval(1)
-      else glfwSwapInterval(0)
-    ImGui.end()
-    ImGui.render()
-    imGuiRenderer.renderDrawData(ImGui.getDrawData)
-
-  def close(): Unit =
-    glfwTerminate()
-
-  private def drawScene(scene: Scene) =
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    shader.use()
-    scene.bindLightsUniform()
-
-    scene.entities.foreach: ent =>
-      shader.setMatrix4f("MVP", Matrix4f(camera.projMatrix).mul(camera.viewMatrix).mul(ent.modelMatrix))
-      shader.setMatrix4f("M", ent.modelMatrix)
-      shader.setVector3f("camPos", camera.pos)
-      shader.setVector3f("ambientLight", ent.ambientLight.getOrElse(scene.ambientLight))
-     
-      ent.texture.bind(0)
-      ent.spec.bind(1)
-      ent.mesh.draw()
-    
-    skybox.draw(camera.viewMatrix, camera.projMatrix)
-    
-  private def getCursorPos(win: Long) =
-    Using.resource(MemoryStack.stackPush()): stack =>
-      val (x, y) = (stack.mallocDouble(1), stack.mallocDouble(1))
-      glfwGetCursorPos(win, x, y)
-      Vector2f(x.get.toFloat, y.get.toFloat)
+  def close(): Unit = window.exit()

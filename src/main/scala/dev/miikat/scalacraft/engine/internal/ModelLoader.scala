@@ -1,14 +1,15 @@
-package dev.miikat.scalacraft.engine
+package dev.miikat.scalacraft.engine.internal
 
 import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.assimp.*
+import org.lwjgl.system.MemoryUtil
+import dev.miikat.scalacraft.engine.Util
 import scala.collection.mutable.ArrayBuffer
 import org.joml.Vector3f
-import org.lwjgl.system.MemoryUtil
+import dev.miikat.scalacraft.engine.Mesh
 
-
-object Model:
-  val ioSys = AIFileIO.create()
+object ModelLoader:
+  private val aiIoSys = AIFileIO.create()
     .OpenProc((pFileIO, pFilename, openMode) => 
       val filename = MemoryUtil.memUTF8(pFilename)
       // AssImp adds a slash already
@@ -33,20 +34,20 @@ object Model:
         .address()
     )
     .CloseProc((pFileIO, pFile) => {
-        val aiFile = AIFile.create(pFile);
-        aiFile.ReadProc().free();
-        aiFile.SeekProc().free();
-        aiFile.FileSizeProc().free();
-    });
+        val aiFile = AIFile.create(pFile)
+        aiFile.ReadProc().free()
+        aiFile.SeekProc().free()
+        aiFile.FileSizeProc().free()
+    })
 
   // assimp lwjgl bindings use the C flat interface
-  def load(path: String) = 
+  def fromFile(path: String) = 
     val scene = aiImportFileEx(
       path,
       aiProcess_Triangulate | aiProcess_GenSmoothNormals | 
       aiProcess_JoinIdenticalVertices | aiProcess_OptimizeGraph | 
       aiProcess_OptimizeMeshes | aiProcess_GenUVCoords,
-      ioSys
+      aiIoSys
     )
     if scene == null then throw Exception(aiGetErrorString())
     val nMeshes = scene.mNumMeshes

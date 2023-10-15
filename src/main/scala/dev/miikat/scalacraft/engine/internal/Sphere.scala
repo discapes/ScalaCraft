@@ -1,10 +1,10 @@
-package dev.miikat.scalacraft.game
+package dev.miikat.scalacraft.engine.internal
 
 import scala.collection.mutable.ArrayBuffer
 import dev.miikat.scalacraft.engine.Mesh
 
 object Sphere:
-  // from https://www.songho.ca/opengl/gl_sphere.html#example_sphere
+   // from https://www.songho.ca/opengl/gl_sphere.html#example_sphere
   def create(sectorCount: Int, stackCount: Int, radius: Float) =
     val vertices = ArrayBuffer[Float]()
     val indices = ArrayBuffer[Int]()
@@ -47,22 +47,22 @@ object Sphere:
     end for
 
     for i <- 0 until stackCount do
-      var k1 = i * (sectorCount + 1);     // beginning of current stack
-      var k2 = k1 + sectorCount + 1;      // beginning of next stack
+      var k1 = i * (sectorCount + 1)     // beginning of current stack
+      var k2 = k1 + sectorCount + 1      // beginning of next stack
 
       for j <- 0 until sectorCount do
         // 2 triangles per sector excluding first and last stacks
         // k1 => k2 => k1+1
         if i != 0 then
-            indices.append(k1);
-            indices.append(k2);
-            indices.append(k1 + 1);
+            indices.append(k1)
+            indices.append(k2)
+            indices.append(k1 + 1)
 
         // k1+1 => k2 => k2+1
         if i != (stackCount-1) then
-            indices.append(k1 + 1);
-            indices.append(k2);
-            indices.append(k2 + 1);
+            indices.append(k1 + 1)
+            indices.append(k2)
+            indices.append(k2 + 1)
 
         k1 += 1
         k2 += 1

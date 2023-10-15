@@ -21,7 +21,7 @@ import org.lwjgl.opengl.GL45C.*
 import org.lwjgl.stb.STBImage.*
 import org.lwjgl.system.MemoryStack
 import scala.util.Using
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
 import java.io.IOError
 import java.io.IOException

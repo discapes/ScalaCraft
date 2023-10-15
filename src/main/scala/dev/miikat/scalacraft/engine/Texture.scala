@@ -21,7 +21,7 @@ import org.lwjgl.opengl.GL45C.*
 import org.lwjgl.stb.STBImage.*
 import org.lwjgl.system.MemoryStack
 import scala.util.Using
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
 import java.io.IOError
 import java.io.IOException
@@ -30,9 +30,9 @@ class Texture(name: String):
   val id = glCreateTextures(GL_TEXTURE_2D)
   val (w, h, data) = Util.loadImage(name, flip = true)
 
-  glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+  glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
   glTextureStorage2D(id, 1, GL_RGBA8, w, h)
   glTextureSubImage2D(id, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data)
